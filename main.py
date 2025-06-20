@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import swisseph as swe
+import requests
 
 app = Flask(__name__)
 swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
@@ -64,6 +65,36 @@ def obtener_signo(grados):
         "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"
     ]
     return signos[int(grados // 30)]
+
+@app.route('/geo', methods=['GET'])
+def obtener_geolocalizacion():
+    try:
+        ciudad = request.args.get("ciudad")
+        provincia = request.args.get("provincia")
+        pais = request.args.get("pais")
+
+        if not all([ciudad, provincia, pais]):
+            return jsonify({"error": "Faltan parámetros"})
+
+        direccion = f"{ciudad}, {provincia}, {pais}"
+        api_key = "21f0075720f44914b2cfdd8e64c27b68"  # <-- reemplazá por tu key real
+        url = f"https://api.opencagedata.com/geocode/v1/json?q={direccion}&key={api_key}&language=es&pretty=1"
+
+        response = requests.get(url)
+        data = response.json()
+
+        if data["results"]:
+            geometry = data["results"][0]["geometry"]
+            return jsonify({
+                "latitud": geometry["lat"],
+                "longitud": geometry["lng"]
+            })
+        else:
+            return jsonify({"error": "No se encontraron resultados"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 
 
 
