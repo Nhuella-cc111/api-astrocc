@@ -11,7 +11,19 @@ def grados_a_dms(grado_decimal):
     segundos = int((((grado_decimal - grados) * 60) - minutos) * 60)
     return f"{grados:02d}°{minutos:02d}'{segundos:02d}\""
 
-
+def obtener_casa(grado_planeta, casas):
+    for i in range(12):
+        inicio = casas[i]
+        fin = casas[(i + 1) % 12]
+        if fin < inicio:
+            fin += 360
+        grado = grado_planeta
+        if grado < inicio:
+            grado += 360
+        if inicio <= grado < fin:
+            return i + 1
+    return 12
+    
 @app.route('/sol', methods=['GET'])
 def obtener_sol():
     try:
@@ -40,24 +52,6 @@ def obtener_sol():
         return jsonify({"error": str(e)})
 
 
-#@app.route('/sol', methods=['GET'])
-#def obtener_sol():
-#    try:
-#        anio = int(request.args.get("anio"))
-#        mes = int(request.args.get("mes"))
-#        dia = int(request.args.get("dia"))
-#        hora = int(request.args.get("hora"))
-#        minuto = int(request.args.get("minuto"))
-
-#        hora_decimal = hora + minuto / 60
-#        jd = swe.julday(anio, mes, dia, hora_decimal)
-#        sol = swe.calc_ut(jd, swe.SUN)
-#        grados = sol[0][0]
-#        signo = obtener_signo(grados)
-
-#        return jsonify({"signo": signo, "grados": round(grados, 2)})
-#    except Exception as e:
-#        return jsonify({"error": str(e)})
 
 def obtener_signo(grados):
     signos = [
@@ -92,6 +86,37 @@ def obtener_geolocalizacion():
         else:
             return jsonify({"error": "No se encontraron resultados"})
 
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/luna', methods=['GET'])
+def obtener_luna():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        hora_decimal = hora + minuto / 60
+        jd = swe.julday(anio, mes, dia, hora_decimal)
+
+        luna = swe.calc_ut(jd, swe.MOON)[0][0]
+        signo = obtener_signo(luna)
+
+        # Ascendente y casas
+        armc, geolat, geolon = swe.sidtime(jd), lat, lon
+        casas = swe.houses(jd, geolat, geolon)[0]
+
+        casa_luna = obtener_casa(luna, casas)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(luna, 2),
+            "casa": casa_luna
+        })
     except Exception as e:
         return jsonify({"error": str(e)})
 
