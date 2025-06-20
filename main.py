@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import swisseph as swe
 import requests
 
+
 app = Flask(__name__)
 swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
 
@@ -23,42 +24,24 @@ def obtener_casa(grado_planeta, casas):
         if inicio <= grado < fin:
             return i + 1
     return 12
+
+def obtener_offset_horario(lat, lon):
+    api_key = '0KL8FYY73NT2'  # 🔁 Reemplazá con tu API Key de TimeZoneDB
+    url = f'https://api.timezonedb.com/v2.1/get-time-zone?key={api_key}&format=json&by=position&lat={lat}&lng={lon}'
     
-@app.route('/sol', methods=['GET'])
-def obtener_sol():
     try:
-        anio = int(request.args.get("anio"))
-        mes = int(request.args.get("mes"))
-        dia = int(request.args.get("dia"))
-        hora = int(request.args.get("hora"))
-        minuto = int(request.args.get("minuto"))
-
-        hora_decimal = hora + minuto / 60
-        jd = swe.julday(anio, mes, dia, hora_decimal)
-        sol = swe.calc_ut(jd, swe.SUN)
-        grados_abs = sol[0][0]
-
-        signo = obtener_signo(grados_abs)
-        grado_signo = grados_abs % 30
-        formato_dms = grados_a_dms(grado_signo)
-
-        return jsonify({
-            "signo": signo,
-            "grados": round(grados_abs, 2),
-            "grado_en_signo": formato_dms,
-            "signo_completo": f"{formato_dms} {signo}"
-        })
+        response = requests.get(url)
+        datos = response.json()
+        if datos['status'] == 'OK':
+            offset_segundos = int(datos['gmtOffset'])
+            offset_horas = offset_segundos / 3600
+            return offset_horas
+        else:
+            print(f"Error al obtener zona horaria: {datos['message']}")
+            return 0  # por defecto si falla
     except Exception as e:
-        return jsonify({"error": str(e)})
-
-
-
-def obtener_signo(grados):
-    signos = [
-        "Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra",
-        "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"
-    ]
-    return signos[int(grados // 30)]
+        print(f"Error de conexión con TimeZoneDB: {e}")
+        return 0
 
 @app.route('/geo', methods=['GET'])
 def obtener_geolocalizacion():
@@ -89,6 +72,51 @@ def obtener_geolocalizacion():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+
+@app.route('/sol', methods=['GET'])
+def obtener_sol():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+
+    #    hora_decimal = hora + minuto / 60
+    #    jd = swe.julday(anio, mes, dia, hora_decimal)
+        sol = swe.calc_ut(jd, swe.SUN)
+        grados_abs = sol[0][0]
+
+        signo = obtener_signo(grados_abs)
+        grado_signo = grados_abs % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_abs, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+
+def obtener_signo(grados):
+    signos = [
+        "Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra",
+        "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"
+    ]
+    return signos[int(grados // 30)]
+
+
 @app.route('/luna', methods=['GET'])
 def obtener_luna():
     try:
@@ -100,8 +128,12 @@ def obtener_luna():
         lat = float(request.args.get("lat"))
         lon = float(request.args.get("lon"))
 
-        hora_decimal = hora + minuto / 60
-        jd = swe.julday(anio, mes, dia, hora_decimal)
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+      #  hora_decimal = hora + minuto / 60
+      #  jd = swe.julday(anio, mes, dia, hora_decimal)
 
         # Posición de la Luna
         luna = swe.calc_ut(jd, swe.MOON)[0]
