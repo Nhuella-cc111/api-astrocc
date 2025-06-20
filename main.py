@@ -58,12 +58,12 @@ def obtener_sol():
 #    except Exception as e:
 #        return jsonify({"error": str(e)})
 
-#def obtener_signo(grados):
-#    signos = [
-#        "Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra",
-#        "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"
-#    ]
-#    return signos[int(grados // 30)]
+def obtener_signo(grados):
+    signos = [
+        "Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra",
+        "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"
+    ]
+    return signos[int(grados // 30)]
 
 
 
