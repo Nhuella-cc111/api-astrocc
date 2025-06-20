@@ -109,7 +109,7 @@ def obtener_luna():
         signo = obtener_signo(grados_luna)
 
         # Calcular casas
-        casas, ascmc = swe.houses(jd, lat, lon, b'C')  # 'P' es Placidus por defecto
+        casas, ascmc = swe.houses(jd, lat, lon, b'B')  # 'P' es Placidus por defecto
 
         # Determinar en qué casa está la Luna
         casa_luna = None
