@@ -103,24 +103,39 @@ def obtener_luna():
         hora_decimal = hora + minuto / 60
         jd = swe.julday(anio, mes, dia, hora_decimal)
 
-        luna = swe.calc_ut(jd, swe.MOON)[0][0]
-        signo = obtener_signo(luna)
+        # Posición de la Luna
+        luna = swe.calc_ut(jd, swe.MOON)[0]
+        grados_luna = luna[0]
+        signo = obtener_signo(grados_luna)
 
-        # Ascendente y casas
-        armc, geolat, geolon = swe.sidtime(jd), lat, lon
-        casas = swe.houses(jd, geolat, geolon)[0]
+        # Calcular casas
+        casas, ascmc = swe.houses(jd, lat, lon.encode(), b'P')  # 'P' es Placidus por defecto
 
-        casa_luna = obtener_casa(luna, casas)
+        # Determinar en qué casa está la Luna
+        casa_luna = None
+        for i in range(12):
+            inicio = casas[i]
+            fin = casas[(i + 1) % 12]
+            if fin < inicio:
+                fin += 360  # ajuste por ciclo
+            pos = grados_luna
+            if pos < inicio:
+                pos += 360  # ajuste si pasa el 0 Aries
+            if inicio <= pos < fin:
+                casa_luna = i + 1
+                break
+
+        # Armar lista de cúspides
+        cuspides = [{"casa": i+1, "inicio": round(casas[i], 2)} for i in range(12)]
 
         return jsonify({
             "signo": signo,
-            "grados": round(luna, 2),
-            "casa": casa_luna
+            "grados": round(grados_luna, 2),
+            "casa": casa_luna,
+            "cuspides": cuspides
         })
     except Exception as e:
         return jsonify({"error": str(e)})
-
-
 
 
 
