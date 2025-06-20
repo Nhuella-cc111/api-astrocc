@@ -12,18 +12,22 @@ def grados_a_dms(grado_decimal):
     segundos = int((((grado_decimal - grados) * 60) - minutos) * 60)
     return f"{grados:02d}°{minutos:02d}'{segundos:02d}\""
 
-def obtener_casa(grado_planeta, casas):
+def calcular_casa(jd, lat, lon, grado_planeta):
+    ascmc, cuspides = swe.houses(jd, lat, lon)
+    casa = 12
     for i in range(12):
-        inicio = casas[i]
-        fin = casas[(i + 1) % 12]
-        if fin < inicio:
-            fin += 360
-        grado = grado_planeta
-        if grado < inicio:
-            grado += 360
-        if inicio <= grado < fin:
-            return i + 1
-    return 12
+        inicio = cuspides[i]
+        fin = cuspides[(i + 1) % 12]
+        if inicio < fin:
+            if inicio <= grado_planeta < fin:
+                casa = i + 1
+                break
+        else:  # cruce 360 -> 0
+            if grado_planeta >= inicio or grado_planeta < fin:
+                casa = i + 1
+                break
+    return casa
+
 
 def obtener_offset_horario(lat, lon):
     api_key = '0KL8FYY73NT2'  # 🔁 Reemplazá con tu API Key de TimeZoneDB
@@ -72,7 +76,6 @@ def obtener_geolocalizacion():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-
 @app.route('/sol', methods=['GET'])
 def obtener_sol():
     try:
@@ -88,9 +91,6 @@ def obtener_sol():
         hora_utc_decimal = hora + minuto / 60 - offset
         jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
-
-    #    hora_decimal = hora + minuto / 60
-    #    jd = swe.julday(anio, mes, dia, hora_decimal)
         sol = swe.calc_ut(jd, swe.SUN)
         grados_abs = sol[0][0]
 
@@ -98,14 +98,51 @@ def obtener_sol():
         grado_signo = grados_abs % 30
         formato_dms = grados_a_dms(grado_signo)
 
+        casa = calcular_casa(jd, lat, lon, grados_abs)
+
         return jsonify({
             "signo": signo,
             "grados": round(grados_abs, 2),
             "grado_en_signo": formato_dms,
-            "signo_completo": f"{formato_dms} {signo}"
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
         })
     except Exception as e:
         return jsonify({"error": str(e)})
+
+#@app.route('/sol', methods=['GET'])
+#def obtener_sol():
+#    try:
+#        anio = int(request.args.get("anio"))
+#        mes = int(request.args.get("mes"))
+#        dia = int(request.args.get("dia"))
+#        hora = int(request.args.get("hora"))
+#        minuto = int(request.args.get("minuto"))
+#        lat = float(request.args.get("lat"))
+#        lon = float(request.args.get("lon"))
+
+#        offset = obtener_offset_horario(lat, lon)
+#        hora_utc_decimal = hora + minuto / 60 - offset
+#        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+
+ #   #    hora_decimal = hora + minuto / 60
+ #   #    jd = swe.julday(anio, mes, dia, hora_decimal)
+ #       sol = swe.calc_ut(jd, swe.SUN)
+ #       grados_abs = sol[0][0]
+
+ #       signo = obtener_signo(grados_abs)
+ #       grado_signo = grados_abs % 30
+ #       formato_dms = grados_a_dms(grado_signo)
+
+ #       return jsonify({
+ #           "signo": signo,
+ #           "grados": round(grados_abs, 2),
+ #           "grado_en_signo": formato_dms,
+ #           "signo_completo": f"{formato_dms} {signo}"
+ #       })
+ #   except Exception as e:
+ #       return jsonify({"error": str(e)})
 
 
 
@@ -132,44 +169,25 @@ def obtener_luna():
         hora_utc_decimal = hora + minuto / 60 - offset
         jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
-      #  hora_decimal = hora + minuto / 60
-      #  jd = swe.julday(anio, mes, dia, hora_decimal)
-
         # Posición de la Luna
-        luna = swe.calc_ut(jd, swe.MOON)[0]
-        grados_luna = luna[0]
+        grados_luna = swe.calc_ut(jd, swe.MOON)[0][0]
         signo = obtener_signo(grados_luna)
+        grado_signo = grados_luna % 30
+        formato_dms = grados_a_dms(grado_signo)
 
-        # Calcular casas
-        casas, ascmc = swe.houses(jd, lat, lon, b'P')  # 'P' es Placidus por defecto
-
-        # Determinar en qué casa está la Luna
-        casa_luna = None
-        for i in range(12):
-            inicio = casas[i]
-            fin = casas[(i + 1) % 12]
-            if fin < inicio:
-                fin += 360  # ajuste por ciclo
-            pos = grados_luna
-            if pos < inicio:
-                pos += 360  # ajuste si pasa el 0 Aries
-            if inicio <= pos < fin:
-                casa_luna = i + 1
-                break
-
-        # Armar lista de cúspides
-        cuspides = [{"casa": i+1, "inicio": round(casas[i], 2)} for i in range(12)]
+        # Determinar casa
+        casa = calcular_casa(jd, lat, lon, grados_luna)
 
         return jsonify({
             "signo": signo,
             "grados": round(grados_luna, 2),
-            "casa": casa_luna,
-            "cuspides": cuspides
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
         })
+
     except Exception as e:
         return jsonify({"error": str(e)})
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
