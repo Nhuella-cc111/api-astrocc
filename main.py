@@ -29,25 +29,36 @@ def calcular_casa(jd, lat, lon, grado_planeta):
                 break
     return casa
 
-
-
 def obtener_offset_horario(lat, lon):
-    api_key = '0KL8FYY73NT2'  # 🔁 Reemplazá con tu API Key de TimeZoneDB
-    url = f'https://api.timezonedb.com/v2.1/get-time-zone?key={api_key}&format=json&by=position&lat={lat}&lng={lon}'
-    
     try:
+        print(f"Llamando a TimeZoneDB con lat={lat}, lon={lon}")
+        url = f"http://api.timezonedb.com/v2.1/get-time-zone?key=0KL8FYY73NT2&format=json&by=position&lat={lat}&lng={lon}"
         response = requests.get(url)
-        datos = response.json()
-        if datos['status'] == 'OK':
-            offset_segundos = int(datos['gmtOffset'])
-            offset_horas = offset_segundos / 3600
-            return offset_horas
-        else:
-            print(f"Error al obtener zona horaria: {datos['message']}")
-            return 0  # por defecto si falla
+        print(f"Respuesta cruda de TimeZoneDB: {response.text}")
+        data = response.json()
+        return data["gmtOffset"] / 3600  # convertir a horas
     except Exception as e:
         print(f"Error de conexión con TimeZoneDB: {e}")
-        return 0
+        return -3  # fallback para Argentina
+
+
+#def obtener_offset_horario(lat, lon):
+#    api_key = '0KL8FYY73NT2'  # 🔁 Reemplazá con tu API Key de TimeZoneDB
+#    url = f'https://api.timezonedb.com/v2.1/get-time-zone?key={api_key}&format=json&by=position&lat={lat}&lng={lon}'
+    
+#    try:
+#        response = requests.get(url)
+#        datos = response.json()
+#        if datos['status'] == 'OK':
+#            offset_segundos = int(datos['gmtOffset'])
+#            offset_horas = offset_segundos / 3600
+#            return offset_horas
+#        else:
+#            print(f"Error al obtener zona horaria: {datos['message']}")
+#            return 0  # por defecto si falla
+#    except Exception as e:
+#        print(f"Error de conexión con TimeZoneDB: {e}")
+#        return 0
 
 @app.route('/geo', methods=['GET'])
 def obtener_geolocalizacion():
@@ -146,7 +157,7 @@ def obtener_luna():
 
         # Determinar casa
         casa = calcular_casa(jd, lat, lon, grados_luna)
-        print(f"lat: {lat}, lon: {lon}, offset: {offset}, hora_utc: {hora_utc_decimal}, jd: {jd}")
+        #print(f"lat: {lat}, lon: {lon}, offset: {offset}, hora_utc: {hora_utc_decimal}, jd: {jd}")
 
         return jsonify({
             "signo": signo,
