@@ -112,39 +112,6 @@ def obtener_sol():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-#@app.route('/sol', methods=['GET'])
-#def obtener_sol():
-#    try:
-#        anio = int(request.args.get("anio"))
-#        mes = int(request.args.get("mes"))
-#        dia = int(request.args.get("dia"))
-#        hora = int(request.args.get("hora"))
-#        minuto = int(request.args.get("minuto"))
-#        lat = float(request.args.get("lat"))
-#        lon = float(request.args.get("lon"))
-
-#        offset = obtener_offset_horario(lat, lon)
-#        hora_utc_decimal = hora + minuto / 60 - offset
-#        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-
-
- #   #    hora_decimal = hora + minuto / 60
- #   #    jd = swe.julday(anio, mes, dia, hora_decimal)
- #       sol = swe.calc_ut(jd, swe.SUN)
- #       grados_abs = sol[0][0]
-
- #       signo = obtener_signo(grados_abs)
- #       grado_signo = grados_abs % 30
- #       formato_dms = grados_a_dms(grado_signo)
-
- #       return jsonify({
- #           "signo": signo,
- #           "grados": round(grados_abs, 2),
- #           "grado_en_signo": formato_dms,
- #           "signo_completo": f"{formato_dms} {signo}"
- #       })
- #   except Exception as e:
- #       return jsonify({"error": str(e)})
 
 
 
@@ -179,6 +146,7 @@ def obtener_luna():
 
         # Determinar casa
         casa = calcular_casa(jd, lat, lon, grados_luna)
+        print(f"lat: {lat}, lon: {lon}, offset: {offset}, hora_utc: {hora_utc_decimal}, jd: {jd}")
 
         return jsonify({
             "signo": signo,
