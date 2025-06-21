@@ -206,6 +206,340 @@ def obtener_luna():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+@app.route('/mercurio', methods=['GET'])
+def obtener_mercurio():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_mercurio = swe.calc_ut(jd, swe.MERCURY)[0][0]
+        signo = obtener_signo(grados_mercurio)
+        grado_signo = grados_mercurio % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_mercurio)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_mercurio, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/venus', methods=['GET'])
+def obtener_venus():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_venus = swe.calc_ut(jd, swe.VENUS)[0][0]
+        signo = obtener_signo(grados_venus)
+        grado_signo = grados_venus % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_venus)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_venus, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+ @app.route('/marte', methods=['GET'])
+def obtener_marte():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_marte = swe.calc_ut(jd, swe.MARS)[0][0]
+        signo = obtener_signo(grados_marte)
+        grado_signo = grados_marte % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_marte)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_marte, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+ @app.route('/jupiter', methods=['GET'])
+def obtener_jupiter():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_jupiter = swe.calc_ut(jd, swe.JUPITER)[0][0]
+        signo = obtener_signo(grados_jupiter)
+        grado_signo = grados_jupiter % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_jupiter)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_jupiter, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+        
+ @app.route('/saturno', methods=['GET'])
+def obtener_saturno():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_saturno = swe.calc_ut(jd, swe.SATURN)[0][0]
+        signo = obtener_signo(grados_saturno)
+        grado_signo = grados_saturno % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_saturno)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_saturno, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/urano', methods=['GET'])
+def obtener_urano():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_urano = swe.calc_ut(jd, swe.URANUS)[0][0]
+        signo = obtener_signo(grados_urano)
+        grado_signo = grados_urano % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_urano)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_urano, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+@app.route('/neptuno', methods=['GET'])
+def obtener_neptuno():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_neptuno = swe.calc_ut(jd, swe.NEPTUNE)[0][0]
+        signo = obtener_signo(grados_neptuno)
+        grado_signo = grados_neptuno % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_neptuno)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_neptuno, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+@app.route('/pluton', methods=['GET'])
+def obtener_pluton():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_pluton = swe.calc_ut(jd, swe.PLUTO)[0][0]
+        signo = obtener_signo(grados_pluton)
+        grado_signo = grados_pluton % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_pluton)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_pluton, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+        
+
+@app.route('/nodoN', methods=['GET'])
+def obtener_nodoN():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_nodoN = swe.calc_ut(jd, swe.MEAN_NODE)[0][0]
+        signo = obtener_signo(grados_nodoN)
+        grado_signo = grados_nodoN % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_nodoN)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_nodoN, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/quiron', methods=['GET'])
+def obtener_quiron():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_quiron = swe.calc_ut(jd, swe.CHIRON)[0][0]
+        signo = obtener_signo(grados_quiron)
+        grado_signo = grados_quiron % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, grados_quiron)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_quiron, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+        
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
 
