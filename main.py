@@ -135,6 +135,41 @@ def obtener_signo(grados):
     return signos[int(grados // 30)]
 
 
+@app.route('/ascendente', methods=['GET'])
+def obtener_ascendente():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        # Calcular hora UTC
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+
+        # Calcular día juliano
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        # Calcular casas y ascendente
+        casas, ascmc = swe.houses(jd, lat, lon, b'P')
+        asc = ascmc[0]
+        signo = obtener_signo(asc)
+        grado_signo = asc % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        return jsonify({
+            "ascendente_grado": round(asc, 2),
+            "signo": signo,
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}"
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 @app.route('/luna', methods=['GET'])
 def obtener_luna():
     try:
