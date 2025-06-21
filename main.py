@@ -12,8 +12,9 @@ def grados_a_dms(grado_decimal):
     segundos = int((((grado_decimal - grados) * 60) - minutos) * 60)
     return f"{grados:02d}°{minutos:02d}'{segundos:02d}\""
 
+
 def calcular_casa(jd, lat, lon, grado_planeta):
-    ascmc, cuspides = swe.houses(jd, lat, lon)
+    cuspides, _ = swe.houses(jd, lat, lon, b'P')  # <--- invertido!
     casa = 12
     for i in range(12):
         inicio = cuspides[i]
@@ -27,6 +28,7 @@ def calcular_casa(jd, lat, lon, grado_planeta):
                 casa = i + 1
                 break
     return casa
+
 
 
 def obtener_offset_horario(lat, lon):
