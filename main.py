@@ -34,12 +34,13 @@ def obtener_offset_horario(lat, lon):
         print(f"Llamando a TimeZoneDB con lat={lat}, lon={lon}")
         url = f"http://api.timezonedb.com/v2.1/get-time-zone?key=0KL8FYY73NT2&format=json&by=position&lat={lat}&lng={lon}"
         response = requests.get(url)
-        print(f"Respuesta cruda de TimeZoneDB: {response.text}")
+        print(f"Status Code: {response.status_code}")
+        print(f"Raw Response: {response.text}")
         data = response.json()
-        return data["gmtOffset"] / 3600  # convertir a horas
+        return data["gmtOffset"] / 3600
     except Exception as e:
-        print(f"Error de conexión con TimeZoneDB: {e}")
-        return -3  # fallback para Argentina
+        print(f"❌ ERROR en TimeZoneDB con lat={lat} lon={lon} → {e}")
+        return -3  # fallback
 
 
 #def obtener_offset_horario(lat, lon):
