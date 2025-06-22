@@ -401,8 +401,8 @@ def obtener_urano():
             "signo_completo": f"{formato_dms} {signo}",
             "casa": casa
         })
-     except Exception as e:
-      return jsonify({"error": str(e)})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 @app.route('/neptuno', methods=['GET'])
 def obtener_neptuno():
