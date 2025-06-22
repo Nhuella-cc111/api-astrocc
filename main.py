@@ -2,10 +2,10 @@ from flask import Flask, request, jsonify
 import swisseph as swe
 import requests
 
+swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
 
 app = Flask(__name__)
-swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
-swe.set_ephe_path('ephe')
+
 
 
 def grados_a_dms(grado_decimal):
