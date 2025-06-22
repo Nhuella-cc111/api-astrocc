@@ -512,6 +512,45 @@ def obtener_nodoN():
 
     except Exception as e:
         return jsonify({"error": str(e)})
+    
+@app.route('/nodosur', methods=['GET'])
+def obtener_nodo_sur():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        # Nodo Norte (MEAN Node)
+        nodo_norte = swe.calc_ut(jd, swe.MEAN_NODE)[0][0]
+
+        # Nodo Sur = opuesto al Nodo Norte
+        nodo_sur = (nodo_norte + 180) % 360
+
+        signo = obtener_signo(nodo_sur)
+        grado_signo = nodo_sur % 30
+        formato_dms = grados_a_dms(grado_signo)
+
+        casa = calcular_casa(jd, lat, lon, nodo_sur)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(nodo_sur, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+ 
 
 @app.route('/quiron', methods=['GET'])
 def obtener_quiron():
