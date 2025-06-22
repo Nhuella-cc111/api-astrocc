@@ -6,6 +6,8 @@ import requests
 app = Flask(__name__)
 swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
 
+
+
 def grados_a_dms(grado_decimal):
     grados = int(grado_decimal)
     minutos = int((grado_decimal - grados) * 60)
