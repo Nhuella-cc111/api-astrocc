@@ -541,6 +541,40 @@ def obtener_quiron():
 
     except Exception as e:
         return jsonify({"error": str(e)})
+
+
+@app.route('/lilith', methods=['GET'])
+def obtener_lilith():
+    try:
+        anio = int(request.args.get("anio"))
+        mes = int(request.args.get("mes"))
+        dia = int(request.args.get("dia"))
+        hora = int(request.args.get("hora"))
+        minuto = int(request.args.get("minuto"))
+        lat = float(request.args.get("lat"))
+        lon = float(request.args.get("lon"))
+
+        offset = obtener_offset_horario(lat, lon)
+        hora_utc_decimal = hora + minuto / 60 - offset
+        jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+
+        grados_lilith = swe.calc_ut(jd, 12)[0][0]  # Lilith media
+        signo = obtener_signo(grados_lilith)
+        grado_signo = grados_lilith % 30
+        formato_dms = grados_a_dms(grado_signo)
+        casa = calcular_casa(jd, lat, lon, grados_lilith)
+
+        return jsonify({
+            "signo": signo,
+            "grados": round(grados_lilith, 2),
+            "grado_en_signo": formato_dms,
+            "signo_completo": f"{formato_dms} {signo}",
+            "casa": casa
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
         
 
 if __name__ == '__main__':
