@@ -271,8 +271,9 @@ def obtener_venus():
 
     except Exception as e:
         return jsonify({"error": str(e)})
+       
 
- @app.route('/marte', methods=['GET'])
+@app.route('/marte', methods=['GET'])
 def obtener_marte():
     try:
         anio = int(request.args.get("anio"))
@@ -305,7 +306,7 @@ def obtener_marte():
     except Exception as e:
         return jsonify({"error": str(e)})
 
- @app.route('/jupiter', methods=['GET'])
+@app.route('/jupiter', methods=['GET'])
 def obtener_jupiter():
     try:
         anio = int(request.args.get("anio"))
@@ -338,7 +339,7 @@ def obtener_jupiter():
     except Exception as e:
         return jsonify({"error": str(e)})
         
- @app.route('/saturno', methods=['GET'])
+@app.route('/saturno', methods=['GET'])
 def obtener_saturno():
     try:
         anio = int(request.args.get("anio"))
@@ -400,6 +401,8 @@ def obtener_urano():
             "signo_completo": f"{formato_dms} {signo}",
             "casa": casa
         })
+     except Exception as e:
+      return jsonify({"error": str(e)})
 
 @app.route('/neptuno', methods=['GET'])
 def obtener_neptuno():
