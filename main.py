@@ -760,7 +760,9 @@ def calcular():
 
         # Parseo de datos
         anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
-        hora, minuto = map(int, fila['hora_nac'].split(':'))
+        hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
+        hora = int(hora_str)
+        minuto = int(minuto_str)
         lat = float(fila['lat'])
         lon = float(fila['lon'])
 
