@@ -2,3 +2,4 @@ Flask
 pyswisseph
 gunicorn
 requests
+supabase
