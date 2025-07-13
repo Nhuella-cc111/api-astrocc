@@ -776,5 +776,3 @@ def calcular():
 @app.route('/')
 def home():
     return "✅ API Carnet Cósmico funcionando. Usá /calcular?nh=..."
-
-
