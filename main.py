@@ -3,6 +3,8 @@ from supabase import create_client
 import swisseph as swe
 import requests
 from datetime import date
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 
@@ -41,6 +43,14 @@ def calcular_casa(jd, lat, lon, grado_planeta):
     return casa
 
 
+
+def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
+    # Asignamos zona horaria correcta (Comodoro usa zona Argentina)
+    tz = pytz.timezone("America/Argentina/Buenos_Aires")  # válido para todo el país
+    dt_local = datetime(anio, mes, dia, hora, minuto)
+    offset = tz.utcoffset(dt_local).total_seconds() / 3600
+    return offset
+'''
 def obtener_offset_horario(lat, lon):
     try:
         print(f"Llamando a TimeZoneDB con lat={lat}, lon={lon}")
@@ -53,7 +63,7 @@ def obtener_offset_horario(lat, lon):
     except Exception as e:
         print(f"❌ ERROR en TimeZoneDB con lat={lat} lon={lon} → {e}")
         return -3  # fallback
-
+'''
 
 def obtener_geolocalizacion():
     try:
