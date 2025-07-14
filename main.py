@@ -106,7 +106,7 @@ def obtener_sol(anio, mes, dia, hora, minuto, lat, lon):
     print(
         f"🛰️ Procesando Sol → {anio}-{mes}-{dia} {hora}:{minuto}, lat: {lat}, lon: {lon}"
     )
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -130,7 +130,7 @@ def obtener_sol(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
     # Calcular hora UTC
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     # Calcular día juliano
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
@@ -187,7 +187,7 @@ def obtener_luna(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
     grados_mercurio = swe.calc_ut(jd, swe.MERCURY)[0][0]
@@ -207,7 +207,7 @@ def obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_venus(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -236,7 +236,7 @@ def obtener_venus(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_marte(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -258,7 +258,7 @@ def obtener_marte(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -280,7 +280,7 @@ def obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_saturno(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -302,7 +302,7 @@ def obtener_saturno(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_urano(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -324,7 +324,7 @@ def obtener_urano(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -346,7 +346,7 @@ def obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_pluton(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -368,7 +368,7 @@ def obtener_pluton(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -390,7 +390,7 @@ def obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -417,7 +417,7 @@ def obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_quiron(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
