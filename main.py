@@ -675,70 +675,70 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "luna_nac":
         obtener_fase_lunar(sol["grados"], luna["grados"]),
         "gr_sol":
-        sol["grados_en_signo"],
+        sol["grado_en_signo"],
         "c_sol":
         sol["casa"],
         "ascen":
         obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
         "gr_asc":
         obtener_ascendente(anio, mes, dia, hora, minuto, lat,
-                           lon)["grados_en_signo"],
+                           lon)["grado_en_signo"],
         "gr_luna":
-        luna["grados_en_signo"],
+        luna["grado_en_signo"],
         "c_luna":
         luna["casa"],
         "gr_merc":
-        mercurio["grados_en_signo"],
+        mercurio["grado_en_signo"],
         "c_merc":
         mercurio["casa"],
         "gr_venus":
-        venus["grados_en_signo"],
+        venus["grado_en_signo"],
         "c_venus":
         venus["casa"],
         "gr_marte":
-        marte["grados_en_signo"],
+        marte["grado_en_signo"],
         "c_marte":
         marte["casa"],
         "gr_jupiter":
-        jupiter["grados_en_signo"],
+        jupiter["grado_en_signo"],
         "c_jupiter":
         jupiter["casa"],
         "gr_satur":
-        saturno["grados_en_signo"],
+        saturno["grado_en_signo"],
         "c_satur":
         saturno["casa"],
         "gr_urano":
-        urano["grados_en_signo"],
+        urano["grado_en_signo"],
         "c_urano":
         urano["casa"],
         "gr_neptu":
-        neptuno["grados_en_signo"],
+        neptuno["grado_en_signo"],
         "c_neptu":
         neptuno["casa"],
         "gr_pluto":
-        pluton["grados_en_signo"],
+        pluton["grado_en_signo"],
         "c_pluto":
         pluton["casa"],
         "nodoN":
         obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon),
         "gr_nodoN":
         obtener_nodoN(anio, mes, dia, hora, minuto, lat,
-                      lon)["grados_en_signo"],
+                      lon)["grado_en_signo"],
         "c_nodoN":
         obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)["casa"],
         "nodoS":
         obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon),
         "gr_nodoS":
         obtener_nodo_sur(anio, mes, dia, hora, minuto, lat,
-                         lon)["grados_en_signo"],
+                         lon)["grado_en_signo"],
         "c_nodoS":
         obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)["casa"],
         "gr_lilith":
-        lilith["grados_en_signo"],
+        lilith["grado_en_signo"],
         "c_lilith":
         lilith["casa"],
         "gr_quiron":
-        quiron["grados_en_signo"],
+        quiron["grado_en_signo"],
         "c_quiron":
         quiron["casa"]
     }
