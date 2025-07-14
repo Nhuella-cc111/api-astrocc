@@ -3,3 +3,4 @@ pyswisseph
 requests
 supabase
 gunicorn
+pytz
