@@ -155,7 +155,7 @@ def obtener_luna(anio, mes, dia, hora, minuto, lat, lon):
     print(
         f"🛰️ Recibido en /luna → {anio}-{mes}-{dia} {hora}:{minuto}, lat: {lat}, lon: {lon}"
     )
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
@@ -439,7 +439,7 @@ def obtener_quiron(anio, mes, dia, hora, minuto, lat, lon):
 
 def obtener_lilith(anio, mes, dia, hora, minuto, lat, lon):
 
-    offset = obtener_offset_horario(lat, lon)
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
