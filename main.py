@@ -644,113 +644,61 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     print("🌟 Modalidad predominante en tu carta:", modalidad_dominante)
 
     registro = {
-        "fecha_nac":
-        date(anio, mes, dia),
-        "hora":
-        hora,
-        "minuto":
-        minuto,
-        "lat":
-        lat,
-        "lon":
-        lon,
-        "sol":
-        sol["signo"],
-        "luna":
-        luna["signo"],
-        "mercurio":
-        mercurio["signo"],
-        "venus":
-        venus["signo"],
-        "marte":
-        marte["signo"],
-        "jupiter":
-        jupiter["signo"],
-        "saturno":
-        saturno["signo"],
-        "urano":
-        urano["signo"],
-        "neptuno":
-        neptuno["signo"],
-        "pluton":
-        pluton["signo"],
-        "quiron":
-        quiron["signo"],
-        "lilith":
-        lilith["signo"],
-        "grados_sol":
-        sol["grados"],
-        "grados_luna":
-        luna["grados"],
-        "luna_nac":
-        obtener_fase_lunar(sol["grados"], luna["grados"]),
-        "gr_sol":
-        sol["grado_en_signo"],
-        "c_sol":
-        sol["casa"],
-        "ascen":
-        obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_asc":
-        obtener_ascendente(anio, mes, dia, hora, minuto, lat,
-                           lon)["grado_en_signo"],
-        "gr_luna":
-        luna["grado_en_signo"],
-        "c_luna":
-        luna["casa"],
-        "gr_merc":
-        mercurio["grado_en_signo"],
-        "c_merc":
-        mercurio["casa"],
-        "gr_venus":
-        venus["grado_en_signo"],
-        "c_venus":
-        venus["casa"],
-        "gr_marte":
-        marte["grado_en_signo"],
-        "c_marte":
-        marte["casa"],
-        "gr_jupiter":
-        jupiter["grado_en_signo"],
-        "c_jupiter":
-        jupiter["casa"],
-        "gr_satur":
-        saturno["grado_en_signo"],
-        "c_satur":
-        saturno["casa"],
-        "gr_urano":
-        urano["grado_en_signo"],
-        "c_urano":
-        urano["casa"],
-        "gr_neptu":
-        neptuno["grado_en_signo"],
-        "c_neptu":
-        neptuno["casa"],
-        "gr_pluto":
-        pluton["grado_en_signo"],
-        "c_pluto":
-        pluton["casa"],
-        "nodoN":
-        obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_nodoN":
-        obtener_nodoN(anio, mes, dia, hora, minuto, lat,
-                      lon)["grado_en_signo"],
-        "c_nodoN":
-        obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)["casa"],
-        "nodoS":
-        obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_nodoS":
-        obtener_nodo_sur(anio, mes, dia, hora, minuto, lat,
-                         lon)["grado_en_signo"],
-        "c_nodoS":
-        obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)["casa"],
-        "gr_lilith":
-        lilith["grado_en_signo"],
-        "c_lilith":
-        lilith["casa"],
-        "gr_quiron":
-        quiron["grado_en_signo"],
-        "c_quiron":
-        quiron["casa"]
+        "fecha_nac": date(anio, mes, dia),
+        "hora": hora,
+        "minuto": minuto,
+        "lat": lat,
+        "lon": lon,
+        "sol: sol["signo"],
+        "luna": luna["signo"],
+        "mercurio": mercurio["signo"],
+        "venus": venus["signo"],
+        "marte": marte["signo"],
+        "jupiter": jupiter["signo"],
+        "saturno": saturno["signo"],
+        "urano": urano["signo"],
+        "neptuno": neptuno["signo"],
+        "pluton": pluton["signo"],
+        "quiron": quiron["signo"],
+        "lilith": lilith["signo"],
+        "grados_sol": sol["grados"],
+        "grados_luna": luna["grados"],
+        "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
+        "gr_sol": sol["grado_en_signo"],
+        "c_sol": sol["casa"],
+        "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
+        "gr_asc": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)["grado_en_signo"],
+        "gr_luna": luna["grado_en_signo"],
+        "c_luna": luna["casa"],
+        "gr_merc": mercurio["grado_en_signo"],
+        "c_merc":  mercurio["casa"],
+        "gr_venus": venus["grado_en_signo"],
+        "c_venus": venus["casa"],
+        "gr_marte": marte["grado_en_signo"],
+        "c_marte": marte["casa"],
+        "gr_jupiter": jupiter["grado_en_signo"],
+        "c_jupiter": jupiter["casa"],
+        "gr_satur": saturno["grado_en_signo"],
+        "c_satur": saturno["casa"],
+        "gr_urano": urano["grado_en_signo"],
+        "c_urano": urano["casa"],
+        "gr_neptu": neptuno["grado_en_signo"],
+        "c_neptu": neptuno["casa"],
+        "gr_pluto": pluton["grado_en_signo"],
+        "c_pluto": pluton["casa"],
+        "nodoN": obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon),
+        "gr_nodoN": obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)["grado_en_signo"],
+        "c_nodoN": obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)["casa"],
+        "nodoS": obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon),
+        "gr_nodoS": obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)["grado_en_signo"],
+        "c_nodoS": obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)["casa"],
+        "gr_lilith": lilith["grado_en_signo"],
+        "c_lilith":  lilith["casa"],
+        "gr_quiron": quiron["grado_en_signo"],
+        "c_quiron":  quiron["casa"],
+        "elemento": obtener_elemento(planetas_en_signos),
+        "polaridad": obtener_polaridad(planetas_en_signos),
+        "modalidad": obtener_modalidad(planetas_en_signos)
     }
     return registro
 
