@@ -649,7 +649,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "minuto": minuto,
         "lat": lat,
         "lon": lon,
-        "sol: sol["signo"],
+        "sol": sol["signo"],
         "luna": luna["signo"],
         "mercurio": mercurio["signo"],
         "venus": venus["signo"],
