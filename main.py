@@ -790,8 +790,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "modalidad": obtener_modalidad(planetas_en_signos),
         "n_destino": calcular_numero_destino(dia, mes, anio),
         "fr_144": calcular_fractal(sol["signo"], luna["signo"]),
-        "dia_llegada" = dia_y_rayo(dia, mes, anio)["dia"],
-        "rayo" = dia_y_rayo(dia, mes, anio)["color"]
+        "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
+        "rayo": dia_y_rayo(dia, mes, anio)["color"]
         
     }
     return registro
