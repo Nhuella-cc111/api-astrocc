@@ -726,7 +726,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "Quiron": quiron["signo"],
         "Lilith": lilith["signo"]
     }
-'''
+    '''
     # Obtener y mostrar el elemento predominante
     elemento_dominante = obtener_elemento(planetas_en_signos)
     print("🌟 Elemento predominante en tu carta:", elemento_dominante)
@@ -734,7 +734,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     print("🌟 Polaridad predominante en tu carta:", polaridad_dominante)
     modalidad_dominante = obtener_modalidad(planetas_en_signos)
     print("🌟 Modalidad predominante en tu carta:", modalidad_dominante)
-'''
+    '''
 
     registro = {
         "fecha_nac": date(anio, mes, dia),
