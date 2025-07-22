@@ -457,22 +457,18 @@ def obtener_lilith(anio, mes, dia, hora, minuto, lat, lon):
         "casa": casa
     }
 
-
 def obtener_fase_lunar(grados_sol, grados_luna):
     diferencia = (grados_luna - grados_sol) % 360
 
-    #esto es una prueba de busqueda de error
-    #print(f"Calculando casas con:")
-    #print(f"dif luna_sol: {diferencia}")
-
-    if diferencia < 90:
-        return "LC"
-    elif diferencia < 180:
-        return "LLL"
-    elif diferencia < 270:
-        return "LM"
+    if diferencia <= 22.5 or diferencia > 337.5:
+        return "LN"  # Luna Nueva
+    elif diferencia <= 112.5:
+        return "LC"  # Luna Creciente
+    elif diferencia <= 202.5:
+        return "LLL" # Luna Llena
     else:
-        return "LN"
+        return "LM"  # Luna Menguante
+
 
 
 def obtener_elemento(planetas_en_signos):
@@ -601,6 +597,99 @@ def obtener_modalidad(planetas_en_signos):
 
     # Unirlos con guiones si hay más de uno
     return "-".join(modalidad_dominantes)
+    
+
+def calcular_numero_destino(dia, mes, anio):
+    """
+    Calcula el número de destino a partir de la fecha de nacimiento.
+    - Suma los dígitos de la fecha.
+    - Si el total inicial es 11, 22 o 33 → se mantiene.
+    - Si no, se reduce hasta un solo dígito (1-9).
+    
+    Parámetro:
+        fecha_nac (str): Fecha en formato 'dd/mm/yyyy' o 'dd-mm-yyyy'
+    
+    Retorna:
+        int: Número de destino (1-9, 11, 22, 33)
+    """
+    # Convertir a string y sumar dígitos
+    todos_digitos = str(dia) + str(mes) + str(anio)
+    total = sum(int(d) for d in todos_digitos)
+       
+    # Verificar número maestro SOLO en la primera suma
+    if total in [11, 22, 33]:
+        return total
+    
+    # Reducir hasta un dígito (sin considerar números maestros)
+    while total > 9:
+        total = sum(int(c) for c in str(total))
+    
+    return total
+
+def calcular_fractal(signo_sol, signo_luna):
+    """
+    Calcula el número de fractal a partir del signo solar y lunar.
+    
+    Parámetros:
+        signo_sol (str): Signo solar (ej: "ARIES", "TAURO", etc.)
+        signo_luna (str): Signo lunar (ej: "GEMINIS", "PISCIS", etc.)
+    
+    Retorna:
+        int: Número de fractal (1-144)
+    """
+    # Normalizamos mayúsculas
+    signo_sol = signo_sol.upper()
+    signo_luna = signo_luna.upper()
+    
+    # Lista de signos en orden
+    signos = ["ARIES", "TAURO", "GEMINIS", "CANCER", "LEO", "VIRGO",
+              "LIBRA", "ESCORPIO", "SAGITARIO", "CAPRICORNIO", "ACUARIO", "PISCIS"]
+    
+    if signo_sol not in signos or signo_luna not in signos:
+        raise ValueError("Signo inválido. Use uno de: " + ", ".join(signos))
+    
+    fila = signos.index(signo_sol)
+    columna = signos.index(signo_luna)
+    
+    nro_fractal = fila * 12 + columna + 1
+    return nro_fractal
+
+#from datetime import datetime
+
+def dia_y_rayo(dia, mes, anio):
+    """
+    Devuelve un diccionario con:
+    - dia: Nombre del día en español
+    - color: Color asociado al día según la tabla
+    
+    Tabla:
+    DOMINGO=AZUL, LUNES=AMARILLO, MARTES=ROSA, MIÉRCOLES=BLANCO,
+    JUEVES=VERDE, VIERNES=NARANJA, SÁBADO=VIOLETA.
+    """
+    fecha = datetime(anio, mes, dia)
+    
+    dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    colores = {
+        "Lunes": "AMARILLO",
+        "Martes": "ROSA",
+        "Miércoles": "BLANCO",
+        "Jueves": "VERDE",
+        "Viernes": "NARANJA",
+        "Sábado": "VIOLETA",
+        "Domingo": "AZUL"
+    }
+    
+    dia_nombre = dias_semana[fecha.weekday()]
+    color = colores[dia_nombre]
+    
+    return {
+        "dia": dia_nombre,
+        "color": color
+    }
+
+
+
+
 
 
 def procesar(anio, mes, dia, hora, minuto, lat, lon):
@@ -698,7 +787,12 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "c_quiron":  quiron["casa"],
         "elemento": obtener_elemento(planetas_en_signos),
         "polaridad": obtener_polaridad(planetas_en_signos),
-        "modalidad": obtener_modalidad(planetas_en_signos)
+        "modalidad": obtener_modalidad(planetas_en_signos),
+        "n_destino": calcular_numero_destino(dia, mes, anio),
+        "fr_144": calcular_fractal(sol["signo"], luna["signo"]),
+        "dia_llegada" = dia_y_rayo(dia, mes, anio)["dia"],
+        "rayo" = dia_y_rayo(dia, mes, anio)["color"]
+        
     }
     return registro
 
