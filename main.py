@@ -779,7 +779,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "c_neptu": neptuno["casa"],
         "gr_pluto": pluton["grado_en_signo"],
         "c_pluto": pluton["casa"],
-        "nodoN": nodoN["signo],
+        "nodoN": nodoN["signo"],
         "gr_nodoN": nodoN["grado_en_signo"],
         "c_nodoN": nodoN["casa"],
         "nodoS": nodoS["signo"],
