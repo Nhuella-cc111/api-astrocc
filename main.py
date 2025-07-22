@@ -626,30 +626,30 @@ def calcular_numero_destino(dia, mes, anio):
     
     return total
 
-def calcular_fractal(signo_sol, signo_luna):
+def calcular_fractal(signo_sol, signo_asc):
     """
-    Calcula el número de fractal a partir del signo solar y lunar.
+    Calcula el número de fractal a partir del signo solar y asc.
     
     Parámetros:
         signo_sol (str): Signo solar (ej: "ARIES", "TAURO", etc.)
-        signo_luna (str): Signo lunar (ej: "GEMINIS", "PISCIS", etc.)
+        signo_asc (str): Signo asc (ej: "GEMINIS", "PISCIS", etc.)
     
     Retorna:
         int: Número de fractal (1-144)
     """
     # Normalizamos mayúsculas
     signo_sol = signo_sol.upper()
-    signo_luna = signo_luna.upper()
+    signo_asc = signo_asc.upper()
     
     # Lista de signos en orden
     signos = ["ARIES", "TAURO", "GEMINIS", "CANCER", "LEO", "VIRGO",
               "LIBRA", "ESCORPIO", "SAGITARIO", "CAPRICORNIO", "ACUARIO", "PISCIS"]
     
-    if signo_sol not in signos or signo_luna not in signos:
+    if signo_sol not in signos or signo_asc not in signos:
         raise ValueError("Signo inválido. Use uno de: " + ", ".join(signos))
     
     fila = signos.index(signo_sol)
-    columna = signos.index(signo_luna)
+    columna = signos.index(signo_asc)
     
     nro_fractal = fila * 12 + columna + 1
     return nro_fractal
@@ -707,7 +707,10 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
     quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon)
     lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon)
-
+    ascen =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
+    nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
+    nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
+    
     # Crear el diccionario con los signos
     planetas_en_signos = {
         "Sol": sol["signo"],
@@ -723,7 +726,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "Quiron": quiron["signo"],
         "Lilith": lilith["signo"]
     }
-
+'''
     # Obtener y mostrar el elemento predominante
     elemento_dominante = obtener_elemento(planetas_en_signos)
     print("🌟 Elemento predominante en tu carta:", elemento_dominante)
@@ -731,6 +734,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     print("🌟 Polaridad predominante en tu carta:", polaridad_dominante)
     modalidad_dominante = obtener_modalidad(planetas_en_signos)
     print("🌟 Modalidad predominante en tu carta:", modalidad_dominante)
+'''
 
     registro = {
         "fecha_nac": date(anio, mes, dia),
@@ -755,8 +759,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
-        "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_asc": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)["grado_en_signo"],
+        "ascen": ascen["signo"],
+        "gr_asc": ascen["grado_en_signo"],
         "gr_luna": luna["grado_en_signo"],
         "c_luna": luna["casa"],
         "gr_merc": mercurio["grado_en_signo"],
@@ -775,12 +779,12 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "c_neptu": neptuno["casa"],
         "gr_pluto": pluton["grado_en_signo"],
         "c_pluto": pluton["casa"],
-        "nodoN": obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_nodoN": obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)["grado_en_signo"],
-        "c_nodoN": obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)["casa"],
-        "nodoS": obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_nodoS": obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)["grado_en_signo"],
-        "c_nodoS": obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)["casa"],
+        "nodoN": nodoN["signo],
+        "gr_nodoN": nodoN["grado_en_signo"],
+        "c_nodoN": nodoN["casa"],
+        "nodoS": nodoS["signo"],
+        "gr_nodoS": nodoS["grado_en_signo"],
+        "c_nodoS": nodoS["casa"],
         "gr_lilith": lilith["grado_en_signo"],
         "c_lilith":  lilith["casa"],
         "gr_quiron": quiron["grado_en_signo"],
@@ -789,7 +793,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "polaridad": obtener_polaridad(planetas_en_signos),
         "modalidad": obtener_modalidad(planetas_en_signos),
         "n_destino": calcular_numero_destino(dia, mes, anio),
-        "fr_144": calcular_fractal(sol["signo"], luna["signo"]),
+        "fr_144": calcular_fractal(sol["signo"], ascen["signo"]),
         "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
         "rayo": dia_y_rayo(dia, mes, anio)["color"]
         
