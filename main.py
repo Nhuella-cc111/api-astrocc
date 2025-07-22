@@ -726,6 +726,11 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "Quiron": quiron["signo"],
         "Lilith": lilith["signo"]
     }
+
+    planetas_nodos = {
+        "nodoN": nodoN["signo"],
+        "nodoS": nodoS["signo"]
+    }    
     '''
     # Obtener y mostrar el elemento predominante
     elemento_dominante = obtener_elemento(planetas_en_signos)
