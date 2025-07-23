@@ -687,6 +687,25 @@ def dia_y_rayo(dia, mes, anio):
         "color": color
     }
 
+def cumple_kin(kin):
+    if not isinstance(kin, int) or kin < 1 or kin > 260:
+        return {"error": "Kin inválido"}
+    
+    ciclo = 260
+    hoy = datetime.now()
+    inicio_ciclo = datetime(2025, 3, 25)  # 25/03/2025
+    
+    dias_desde_inicio = (hoy - inicio_ciclo).days
+    ciclos_pasados = dias_desde_inicio // ciclo
+    fecha_ultimo_inicio = inicio_ciclo + timedelta(days=ciclos_pasados * ciclo)
+    fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
+    
+    return {
+        "kin": kin,
+        "fecha": fecha_cumple_kin.strftime("%d/%m/%Y")
+        
+    }
+
 
 
 
@@ -835,6 +854,15 @@ def calcular():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/cumplekin', methods=['GET'])
+def api_cumple_kin():
+    try:
+        kin = int(request.args.get('kin'))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Debe enviar un número válido (1-260)"}), 400
+    
+    resultado = cumple_kin(kin)
+    return jsonify(resultado)
 
 @app.route('/')
 def home():
