@@ -690,7 +690,7 @@ def dia_y_rayo(dia, mes, anio):
     }
 
 
-
+'''
 from datetime import datetime, timedelta
 from flask import jsonify
 
@@ -698,7 +698,7 @@ from datetime import datetime, timedelta
 from flask import Flask, request
 
 app = Flask(__name__)
-
+'''
 def cumple_kin(kin):
     if not isinstance(kin, int) or kin < 1 or kin > 260:
         return None
@@ -713,9 +713,7 @@ def cumple_kin(kin):
     fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
 
     return fecha_cumple_kin.strftime("%d/%m/%Y")
-
-
-
+    
 
 
 
@@ -870,11 +868,11 @@ def api_cumple_kin():
         kin = int(kin_param)
         fecha = cumple_kin(kin)
         if fecha:
-            return fecha, 200  # Texto plano
+            return jsonify({"fecha": fecha})
         else:
-            return "Kin inválido", 400
+            return jsonify({"error": "Kin inválido"}), 400
     except Exception as e:
-        return str(e), 500
+        return jsonify({"error": str(e)}), 500
 
 '''
 @app.route('/cumplekin', methods=['GET'])
