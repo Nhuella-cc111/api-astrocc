@@ -694,35 +694,26 @@ def dia_y_rayo(dia, mes, anio):
 from datetime import datetime, timedelta
 from flask import jsonify
 
+from datetime import datetime, timedelta
+from flask import Flask, request
+
+app = Flask(__name__)
+
 def cumple_kin(kin):
-    """
-    Calcula la fecha del Kin dentro del ciclo actual.
-    Parámetro:
-        kin (int): Número de Kin (1-260)
-    Retorna:
-        dict: {"kin": kin, "fecha": "dd/mm/yyyy"}
-    """
     if not isinstance(kin, int) or kin < 1 or kin > 260:
-        return {"error": "Kin inválido"}
+        return None
 
     ciclo = 260
     hoy = datetime.now()
     inicio_ciclo = datetime(2025, 3, 25)  # 25/03/2025
 
-    # Días transcurridos desde el inicio del ciclo
     dias_desde_inicio = (hoy - inicio_ciclo).days
     ciclos_pasados = dias_desde_inicio // ciclo
-
-    # Fecha del inicio del ciclo actual
     fecha_ultimo_inicio = inicio_ciclo + timedelta(days=ciclos_pasados * ciclo)
-
-    # Fecha del Kin
     fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
 
-    return {
-        "kin": kin,
-        "fecha": fecha_cumple_kin.strftime("%d/%m/%Y")
-    }
+    return fecha_cumple_kin.strftime("%d/%m/%Y")
+
 
 
 
@@ -876,6 +867,20 @@ def calcular():
 def api_cumple_kin():
     try:
         kin_param = request.args.get('kin')
+        kin = int(kin_param)
+        fecha = cumple_kin(kin)
+        if fecha:
+            return fecha, 200  # Texto plano
+        else:
+            return "Kin inválido", 400
+    except Exception as e:
+        return str(e), 500
+
+'''
+@app.route('/cumplekin', methods=['GET'])
+def api_cumple_kin():
+    try:
+        kin_param = request.args.get('kin')
         print(f"Kin recibido: {kin_param}")
         kin = int(kin_param)
 
@@ -886,7 +891,7 @@ def api_cumple_kin():
     except Exception as e:
         print(f"Error en /cumplekin: {e}")
         return jsonify({"error": str(e)}), 500
-
+'''
         
 
 @app.route('/')
