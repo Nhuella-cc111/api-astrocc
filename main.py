@@ -687,6 +687,9 @@ def dia_y_rayo(dia, mes, anio):
         "color": color
     }
 
+
+
+
 def cumple_kin(kin):
     if not isinstance(kin, int) or kin < 1 or kin > 260:
         return {"error": "Kin inválido"}
@@ -857,12 +860,20 @@ def calcular():
 @app.route('/cumplekin', methods=['GET'])
 def api_cumple_kin():
     try:
-        kin = int(request.args.get('kin'))
-    except (TypeError, ValueError):
-        return jsonify({"error": "Debe enviar un número válido (1-260)"}), 400
+        kin_param = request.args.get('kin')
+        print(f"Kin recibido: {kin_param}")  # Debug
+        kin = int(kin_param)
+        
+        if kin < 1 or kin > 260:
+            return jsonify({"error": "Kin fuera de rango (1-260)"}), 400
+        
+        resultado = cumple_kin(kin)
+        return jsonify(resultado)
     
-    resultado = cumple_kin(kin)
-    return jsonify(resultado)
+    except Exception as e:
+        print(f"Error en /cumplekin: {e}")
+        return jsonify({"error": "Error interno", "detalle": str(e)}), 500
+        
 
 @app.route('/')
 def home():
