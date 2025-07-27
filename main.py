@@ -874,23 +874,132 @@ def api_cumple_kin():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-'''
-@app.route('/cumplekin', methods=['GET'])
-def api_cumple_kin():
+
+@app.route('/guardar', methods=['POST'])
+def guardar_datos():
     try:
-        kin_param = request.args.get('kin')
-        print(f"Kin recibido: {kin_param}")
-        kin = int(kin_param)
-
-        resultado = cumple_kin(kin)
-        print(f"Resultado: {resultado}")  # <-- Debug
-
-        return jsonify(resultado)
-    except Exception as e:
-        print(f"Error en /cumplekin: {e}")
-        return jsonify({"error": str(e)}), 500
-'''
+        data = request.get_json()
+        nh = data.get("nh")
+        nro_kin = data.get("nro_kin")
+        nro_onda = data.get("nro_onda")
+        tipo_dh = data.get("tipo_dh")
+        perfil = data.get("perfil")
         
+
+        if not nh or not nro_kin or not nro_onda or not tipo_dh:
+            return jsonify({"error": "Faltan datos obligatorios"}), 400
+
+        # 1. Buscar datos personales en rtas_form
+        res = supabase.table("rtas_form").select("*").eq("nh", nh).execute()
+        if not res.data:
+            return jsonify({"error": f"No se encontró nh={nh}"}), 404
+
+        fila = res.data[0]
+        # Extraer fecha, hora, lat, lon
+        anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
+        hora, minuto = map(int, fila['hora_nac'].split(':'))
+        lat = float(fila['lat'])
+        lon = float(fila['lon'])
+
+        # 2. Cálculos reutilizando tus funciones
+        sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon)
+        luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
+        mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
+        venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
+        marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon)
+        jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon)
+        saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon)
+        urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon)
+        neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon)
+        pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
+        quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon)
+        lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon)
+        ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
+        nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
+        nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
+   
+        
+        fractal = calcular_fractal(sol["signo"], asc["signo"])
+        numero_destino = calcular_numero_destino(dia, mes, anio)
+        cumple = cumple_kin(nro_kin)["fecha"]  # Ya devuelve JSON
+        elemento = obtener_elemento(planetas_en_signos)
+        polaridad = obtener_polaridad(sol["signo"])
+        modalidad = obtener_modalidad(sol["signo"])
+        fase = obtener_fase_lunar(sol["grado"], luna["grado"])
+        rayo  = dia_y_rayo(dia, mes, anio)["color"]
+        dia_llegada = dia_y_rayo(dia, mes, anio)["dia"]
+
+        # 3. Registro final para datoscc
+        registro = {
+            "nh": nh,
+            "sol": sol["signo"],
+            "luna": luna["signo"],
+            "mercurio": mercurio["signo"],
+            "venus": venus["signo"],
+            "marte": marte["signo"],
+            "jupiter": jupiter["signo"],
+            "saturno": saturno["signo"],
+            "urano": urano["signo"],
+            "neptuno": neptuno["signo"],
+            "pluton": pluton["signo"],
+            "quiron": quiron["signo"],
+            "lilith": lilith["signo"],
+            "grados_sol": sol["grados"],
+            "grados_luna": luna["grados"],
+            "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
+            "gr_sol": sol["grado_en_signo"],
+            "c_sol": sol["casa"],
+            "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
+            "gr_asc": ascendente["grado_en_signo"],
+            "gr_luna": luna["grado_en_signo"],
+            "c_luna": luna["casa"],
+            "gr_merc": mercurio["grado_en_signo"],
+            "c_merc":  mercurio["casa"],
+            "gr_venus": venus["grado_en_signo"],
+            "c_venus": venus["casa"],
+            "gr_marte": marte["grado_en_signo"],
+            "c_marte": marte["casa"],
+            "gr_jupiter": jupiter["grado_en_signo"],
+            "c_jupiter": jupiter["casa"],
+            "gr_satur": saturno["grado_en_signo"],
+            "c_satur": saturno["casa"],
+            "gr_urano": urano["grado_en_signo"],
+            "c_urano": urano["casa"],
+            "gr_neptu": neptuno["grado_en_signo"],
+            "c_neptu": neptuno["casa"],
+            "gr_pluto": pluton["grado_en_signo"],
+            "c_pluto": pluton["casa"],
+            "nodoN": nodoN["signo"],
+            "gr_nodoN": nodoN["grado_en_signo"],
+            "c_nodoN": nodoN["casa"],
+            "nodoS": nodoS["signo"],
+            "gr_nodoS": nodoS["grado_en_signo"],
+            "c_nodoS": nodoS["casa"],
+            "gr_lilith": lilith["grado_en_signo"],
+            "c_lilith":  lilith["casa"],
+            "gr_quiron": quiron["grado_en_signo"],
+            "c_quiron":  quiron["casa"],
+            "elemento": elemento,
+            "polaridad": polaridad,
+            "modalidad": modalidad,
+            "n_destino": numero_destino,
+            "n_fractal": fractal,
+            "dia_llegada": dia_llegada,
+            "rayo": rayo,
+            "nro_kin": nro_kin,
+            "nro_onda": nro_onda,
+            "tipo_dh": tipo_dh,
+            "perfil": perfil
+       
+        }
+
+        # 4. Insertar en Supabase
+        response = supabase.table("datoscc").insert(registro).execute()
+        return jsonify({"status": "ok", "inserted": response.data})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/')
 def home():
