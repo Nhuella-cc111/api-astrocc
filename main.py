@@ -699,6 +699,26 @@ from flask import Flask, request
 
 app = Flask(__name__)
 '''
+
+def cumple_kin(kin):
+    if not isinstance(kin, int) or kin < 1 or kin > 260:
+        return None
+
+    ciclo = 260
+    hoy = datetime.now().date()
+    inicio_ciclo = datetime(2025, 3, 25).date()
+
+    dias_desde_inicio = (hoy - inicio_ciclo).days
+    ciclos_pasados = dias_desde_inicio // ciclo
+    fecha_ultimo_inicio = inicio_ciclo + timedelta(days=ciclos_pasados * ciclo)
+
+    # Si ya pasó el kin actual en este ciclo, mover al próximo ciclo
+    if dias_desde_inicio % ciclo >= kin:
+        fecha_ultimo_inicio += timedelta(days=ciclo)
+
+    fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
+    return fecha_cumple_kin.strftime("%d/%m/%Y")
+'''
 def cumple_kin(kin):
     if not isinstance(kin, int) or kin < 1 or kin > 260:
         return None
@@ -708,12 +728,13 @@ def cumple_kin(kin):
     inicio_ciclo = datetime(2025, 3, 25)  # 25/03/2025
 
     dias_desde_inicio = (hoy - inicio_ciclo).days
+    
     ciclos_pasados = dias_desde_inicio // ciclo
     fecha_ultimo_inicio = inicio_ciclo + timedelta(days=ciclos_pasados * ciclo)
     fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
 
     return fecha_cumple_kin.strftime("%d/%m/%Y")
-    
+ '''   
 
 
 
