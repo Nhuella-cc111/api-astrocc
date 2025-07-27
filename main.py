@@ -733,7 +733,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
     quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon)
     lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon)
-    ascen =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
+    ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
     nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
     nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
     
@@ -790,8 +790,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
-        "ascen": ascen["signo"],
-        "gr_asc": ascen["grado_en_signo"],
+        "ascen": ascendente["signo"],
+        "gr_asc": ascendente["grado_en_signo"],
         "gr_luna": luna["grado_en_signo"],
         "c_luna": luna["casa"],
         "gr_merc": mercurio["grado_en_signo"],
@@ -824,7 +824,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "polaridad": obtener_polaridad(planetas_en_signos),
         "modalidad": obtener_modalidad(planetas_en_signos),
         "n_destino": calcular_numero_destino(dia, mes, anio),
-        "fr_144": calcular_fractal(sol["signo"], ascen["signo"]),
+        "fr_144": calcular_fractal(sol["signo"], ascendente["signo"]),
         "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
         "rayo": dia_y_rayo(dia, mes, anio)["color"]
         
