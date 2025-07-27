@@ -716,7 +716,7 @@ def cumple_kin(kin):
     if dias_desde_inicio % ciclo >= kin:
         fecha_ultimo_inicio += timedelta(days=ciclo)
 
-    fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
+    fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin ))
     return fecha_cumple_kin.strftime("%d/%m/%Y")
 '''
 def cumple_kin(kin):
