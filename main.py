@@ -790,7 +790,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
-        "ascen": ascendente["signo"],
+        "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
         "gr_asc": ascendente["grado_en_signo"],
         "gr_luna": luna["grado_en_signo"],
         "c_luna": luna["casa"],
