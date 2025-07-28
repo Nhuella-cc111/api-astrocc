@@ -697,20 +697,21 @@ def dia_y_rayo(dia, mes, anio):
 def calcular_kin_onda(dia, mes, anio):
     """
     Calcula Kin y Onda Encantada según Dreamspell (13 Lunas).
-    Parámetro:
-        fecha_nac (str): 'dd/mm/yyyy'
+    Parámetros:
+        dia (int)
+        mes (int)
+        anio (int)
     Retorna:
         dict: {"kin": int, "tono": int, "sello": int, "onda": int}
     """
-    # Fecha base Dreamspell: 26/07/1987
-    fecha_base = datetime(1987, 7, 26)
-    fecha_nac = date(anio, mes, dia)
-    fecha_nacimiento = datetime.strptime(fecha_nac, "%d/%m/%Y")
+    # Fecha base Dreamspell
+    fecha_base = date(1987, 7, 26)
+    fecha_nacimiento = date(anio, mes, dia)
 
     # Diferencia en días
     dias = (fecha_nacimiento - fecha_base).days
 
-    # Ajuste módulo
+    # Cálculo de Kin y derivados
     kin = (dias % 260) + 1
     tono = ((kin - 1) % 13) + 1
     sello = ((kin - 1) % 20) + 1
