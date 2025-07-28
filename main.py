@@ -700,24 +700,53 @@ from flask import Flask, request
 app = Flask(__name__)
 '''
 
+from datetime import datetime, timedelta
+
 def cumple_kin(kin):
+    """
+    Calcula el próximo cumpleaños Kin desde HOY, basado en ciclos de 260 días.
+    Parámetros:
+        kin (int): número del kin (1-260)
+    Retorna:
+        dict: {
+            "fecha": "dd/mm/yyyy",
+            "dias_faltantes": int,
+            "ciclo_inicio": "dd/mm/yyyy",
+            "ciclo_fin": "dd/mm/yyyy"
+        }
+    """
     if not isinstance(kin, int) or kin < 1 or kin > 260:
-        return None
+        return {"error": "Kin inválido"}
 
     ciclo = 260
     hoy = datetime.now().date()
-    inicio_ciclo = datetime(2025, 3, 25).date()
+    inicio_base = datetime(2025, 3, 25).date()  # Primer ciclo de referencia
 
-    dias_desde_inicio = (hoy - inicio_ciclo).days
-    ciclos_pasados = dias_desde_inicio // ciclo
-    fecha_ultimo_inicio = inicio_ciclo + timedelta(days=ciclos_pasados * ciclo)
+    # Días desde el inicio base
+    dias_desde_inicio = (hoy - inicio_base).days
 
-    # Si ya pasó el kin actual en este ciclo, mover al próximo ciclo
-    if dias_desde_inicio % ciclo >= kin:
-        fecha_ultimo_inicio += timedelta(days=ciclo)
+    # Cuántos ciclos completos han pasado
+    ciclos_pasados = dias_desde_inicio // ciclo if dias_desde_inicio >= 0 else -1
 
-    fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin ))
+    # Inicio del ciclo actual
+    inicio_ciclo_actual = inicio_base + timedelta(days=ciclos_pasados * ciclo)
+    if inicio_ciclo_actual > hoy:
+        inicio_ciclo_actual -= timedelta(days=ciclo)
+
+    # Fecha de kin en el ciclo actual
+    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin - 1))
+
+    # Si ya pasó hoy, sumamos un ciclo
+    if fecha_kin <= hoy:
+        fecha_kin += timedelta(days=ciclo)
+        inicio_ciclo_actual += timedelta(days=ciclo)
+
+    fin_ciclo_actual = inicio_ciclo_actual + timedelta(days=ciclo - 1)
+
+    dias_faltantes = (fecha_kin - hoy).days
     return fecha_cumple_kin.strftime("%d/%m/%Y")
+    
+
 '''
 def cumple_kin(kin):
     if not isinstance(kin, int) or kin < 1 or kin > 260:
