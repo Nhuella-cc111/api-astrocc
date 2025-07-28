@@ -694,7 +694,7 @@ def dia_y_rayo(dia, mes, anio):
 
 #from datetime import datetime, timedelta
 
-def calcular_kin_onda(dia, mes, anio):
+def procesar_kin_onda(dia, mes, anio):
     """
     Calcula Kin y Onda Encantada según Dreamspell (13 Lunas).
     Parámetros:
