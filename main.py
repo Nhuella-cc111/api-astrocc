@@ -946,7 +946,7 @@ def calcular():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/calcular_kinmaya')
-def calcular():
+def api_calcular_kinmaya():
     nh = request.args.get('nh')
     if not nh:
         return jsonify({"error": "Falta parámetro nh"}), 400
