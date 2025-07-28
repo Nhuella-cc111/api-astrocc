@@ -790,7 +790,15 @@ def cumple_kin(kin):
  '''   
 
 
+def procesa_kin_onda(anio, mes, dia):
 
+    registro = {
+        "nro_kin": calcular_kin_onda(dia, mes, anio)["kin"],
+        "nro_onda": calcular_kin_onda(dia, mes, anio)["onda"],
+        "nro_tono": calcular_kin_onda(dia, mes, anio)["tono"],
+        "nro_sello": calcular_kin_onda(dia, mes, anio)["sello"]
+    } 
+    return registro;
 
 def procesar(anio, mes, dia, hora, minuto, lat, lon):
 
@@ -900,11 +908,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "n_destino": calcular_numero_destino(dia, mes, anio),
         "fr_144": calcular_fractal(sol["signo"], ascendente["signo"]),
         "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
-        "rayo": dia_y_rayo(dia, mes, anio)["color"],
-        "nro_kin": calcular_kin_onda(dia, mes, anio)["kin"],
-        "nro_onda": calcular_kin_onda(dia, mes, anio)["onda"],
-        "nro_tono": calcular_kin_onda(dia, mes, anio)["tono"],
-        "nro_sello": calcular_kin_onda(dia, mes, anio)["sello"]
+        "rayo": dia_y_rayo(dia, mes, anio)["color"]
+        
         
         
     }
@@ -934,6 +939,34 @@ def calcular():
 
         # Llamar a función principal
         resultado = procesar(anio, mes, dia, hora, minuto, lat, lon)
+
+        return jsonify(resultado)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/calcular_kinmaya')
+def calcular():
+    nh = request.args.get('nh')
+    if not nh:
+        return jsonify({"error": "Falta parámetro nh"}), 400
+
+    try:
+        res = supabase.table("rtas_form").select("*").eq("nh", nh).execute()
+        if not res.data:
+            return jsonify({"error": f"No se encontró nh={nh}"}), 404
+
+        fila = res.data[0]
+
+        # Parseo de datos
+        anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
+        hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
+        hora = int(hora_str)
+        minuto = int(minuto_str)
+        
+
+        # Llamar a función principal
+        resultado = procesar_kin_onda(anio, mes, dia)
 
         return jsonify(resultado)
 
