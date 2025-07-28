@@ -741,10 +741,10 @@ def cumple_kin(kin):
         fecha_kin += timedelta(days=ciclo)
         inicio_ciclo_actual += timedelta(days=ciclo)
 
-    fin_ciclo_actual = inicio_ciclo_actual + timedelta(days=ciclo - 1)
+    #fin_ciclo_actual = inicio_ciclo_actual + timedelta(days=ciclo - 1)
 
-    dias_faltantes = (fecha_kin - hoy).days
-    return fecha_cumple_kin.strftime("%d/%m/%Y")
+    #dias_faltantes = (fecha_kin - hoy).days
+    return fecha_kin.strftime("%d/%m/%Y")
     
 
 '''
