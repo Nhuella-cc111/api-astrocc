@@ -690,17 +690,40 @@ def dia_y_rayo(dia, mes, anio):
     }
 
 
-'''
-from datetime import datetime, timedelta
-from flask import jsonify
 
-from datetime import datetime, timedelta
-from flask import Flask, request
 
-app = Flask(__name__)
-'''
+#from datetime import datetime, timedelta
 
-from datetime import datetime, timedelta
+def calcular_kin_onda(dia, mes, anio):
+    """
+    Calcula Kin y Onda Encantada según Dreamspell (13 Lunas).
+    Parámetro:
+        fecha_nac (str): 'dd/mm/yyyy'
+    Retorna:
+        dict: {"kin": int, "tono": int, "sello": int, "onda": int}
+    """
+    # Fecha base Dreamspell: 26/07/1987
+    fecha_base = datetime(1987, 7, 26)
+    fecha_nac = date(anio, mes, dia)
+    fecha_nacimiento = datetime.strptime(fecha_nac, "%d/%m/%Y")
+
+    # Diferencia en días
+    dias = (fecha_nacimiento - fecha_base).days
+
+    # Ajuste módulo
+    kin = (dias % 260) + 1
+    tono = ((kin - 1) % 13) + 1
+    sello = ((kin - 1) % 20) + 1
+    onda = ((kin - 1) // 13) + 1
+
+    return {
+        "kin": kin,
+        "tono": tono,
+        "sello": sello,
+        "onda": onda
+    }
+
+
 
 def cumple_kin(kin):
     """
@@ -734,7 +757,7 @@ def cumple_kin(kin):
         inicio_ciclo_actual -= timedelta(days=ciclo)
 
     # Fecha de kin en el ciclo actual
-    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin - 1))
+    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin ))
 
     # Si ya pasó hoy, sumamos un ciclo
     if fecha_kin <= hoy:
@@ -876,7 +899,12 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "n_destino": calcular_numero_destino(dia, mes, anio),
         "fr_144": calcular_fractal(sol["signo"], ascendente["signo"]),
         "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
-        "rayo": dia_y_rayo(dia, mes, anio)["color"]
+        "rayo": dia_y_rayo(dia, mes, anio)["color"],
+        "nro_kin": calcular_kin_onda(dia, mes, anio)["kin"],
+        "nro_onda": calcular_kin_onda(dia, mes, anio)["onda"],
+        "nro_tono": calcular_kin_onda(dia, mes, anio)["tono"],
+        "nro_sello": calcular_kin_onda(dia, mes, anio)["sello"]
+        
         
     }
     return registro
