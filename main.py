@@ -692,37 +692,56 @@ def dia_y_rayo(dia, mes, anio):
 
 
 
-#from datetime import datetime, timedelta
 
-def procesar_kin_onda(dia, mes, anio):
-    """
-    Calcula Kin y Onda Encantada según Dreamspell (13 Lunas).
-    Parámetros:
-        dia (int)
-        mes (int)
-        anio (int)
-    Retorna:
-        dict: {"kin": int, "tono": int, "sello": int, "onda": int}
-    """
-    # Fecha base Dreamspell
-    fecha_base = date(1987, 7, 26)
-    fecha_nacimiento = date(anio, mes, dia)
 
-    # Diferencia en días
-    dias = (fecha_nacimiento - fecha_base).days
+def calcular_kin_onda(anio, mes, dia):
+    valores_anio = {
+    2065:164, 2064: 59, 2063:214, 2062:109, 2061:  4, 2060:159, 2059: 54, 2058:209, 2057:104, 2056:259, 2055:154,
+    2054: 49, 2053:204, 2052: 99, 2051:254, 2050:149, 2049: 44, 2048:199, 2047: 94, 2046:249, 2045:144, 2044: 39,
+    2043:194, 2042: 89, 2041:244, 2040:139, 2039: 34, 2038:189, 2037: 84, 2036:239, 2035:134, 2034: 29, 2033:184,
+    2032: 79, 2031:234, 2030:129, 2029: 24, 2028:179, 2027: 74, 2026:229, 2025:124, 2024: 19, 2023:174, 2022: 69,
+    2021:224, 2020:119, 2019: 14, 2018:169, 2017: 64, 2016:219, 2015:114, 2014:  9, 2013:164, 2012: 59, 2011:214,
+    2010:109, 2009:  4, 2008:159, 2007: 54, 2006:209, 2005:104, 2004:259, 2003:154, 2002: 49, 2001:204, 2000: 99,
+    1999:254, 1998:149, 1997: 44, 1996:199, 1995: 94, 1994:249, 1993:144, 1992: 39, 1991:194, 1990: 89, 1989:244,
+    1988:139, 1987: 34, 1986:189, 1985: 84, 1984:239, 1983:134, 1982: 29, 1981:184, 1980: 79, 1979:234, 1978:129,
+    1977: 24, 1976:179, 1975: 74, 1974:229, 1973:124, 1972: 19, 1971:174, 1970: 69, 1969:224, 1968:119, 1967: 14,
+    1966:169, 1965: 64, 1964:219, 1963:114, 1962:  9, 1961:164, 1960: 59, 1959:214, 1958:109, 1957:  4, 1956:159,
+    1955: 54, 1954:209, 1953:104, 1952:259, 1951:154, 1950: 49, 1949:204, 1948: 99, 1947:254, 1946:149, 1945: 44,
+    1944:199, 1943: 94, 1942:249, 1941:144, 1940: 39, 1939:194, 1938: 89, 1937:244, 1936:139, 1935: 34, 1934:189,
+    1933: 84, 1932:239, 1931:134, 1930: 29, 1929:184, 1928: 79, 1927:234, 1926:129, 1925: 24, 1924:179, 1923: 74,
+    1922:229, 1921:124, 1920: 19, 1919:174, 1918: 69, 1917:224, 1916:119, 1915: 14, 1914:169, 1913: 64, 1912:219,
+    1911:114, 1910:  9
+}
 
-    # Cálculo de Kin y derivados
-    kin = (dias % 260) + 1
-    tono = ((kin - 1) % 13) + 1
-    sello = ((kin - 1) % 20) + 1
-    onda = ((kin - 1) // 13) + 1
+    valores_mes = {
+    1: 53, 2: 84, 3: 112,
+    4: 143, 5: 173, 6: 204,
+    7: 234, 8: 5, 9: 36,
+    10: 66, 11: 97, 12: 127
+}
 
-    return {
-        "kin": kin,
-        "tono": tono,
-        "sello": sello,
-        "onda": onda
-    }
+    
+
+    try:
+        valor_anio = valores_anio[anio]
+        valor_mes = valores_mes[mes]
+        
+        suma_total = valor_anio + valor_mes + dia
+        nro_kin = suma_total if suma_total <= 260 else suma_total % 260
+                
+        nro_onda = ((nro_kin - 1) // 13) + 1
+        tono = ((nro_kin - 1) % 13) + 1
+        sello = ((nro_kin - 1) % 20) + 1
+
+        return {
+            "nro_kin": nro_kin,
+            "nro_onda": nro_onda,
+            "tono": tono,
+            "sello": sello
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 
 
 
@@ -790,13 +809,13 @@ def cumple_kin(kin):
  '''   
 
 
-def procesa_kin_onda(anio, mes, dia):
+def procesar_kin_onda(anio, mes, dia):
 
     registro = {
-        "nro_kin": calcular_kin_onda(dia, mes, anio)["kin"],
-        "nro_onda": calcular_kin_onda(dia, mes, anio)["onda"],
-        "nro_tono": calcular_kin_onda(dia, mes, anio)["tono"],
-        "nro_sello": calcular_kin_onda(dia, mes, anio)["sello"]
+        "nro_kin": calcular_kin_onda(anio, mes, dia)["nro_kin"],
+        "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
+        "nro_tono": calcular_kin_onda(anio, mes, dia)["tono"],
+        "nro_sello": calcular_kin_onda(anio, mes, dia)["sello"]
     } 
     return registro;
 
@@ -961,8 +980,7 @@ def api_calcular_kinmaya():
         # Parseo de datos
         anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
         hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
-        hora = int(hora_str)
-        minuto = int(minuto_str)
+        
         
 
         # Llamar a función principal
