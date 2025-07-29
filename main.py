@@ -736,8 +736,8 @@ def calcular_kin_onda(anio, mes, dia):
         return {
             "nro_kin": nro_kin,
             "nro_onda": nro_onda,
-            "tono": tono,
-            "sello": sello
+            "nro_tono": tono,
+            "nro_sello": sello
         }
     except Exception as e:
         return {"error": str(e)}
@@ -814,8 +814,8 @@ def procesar_kin_onda(anio, mes, dia):
     registro = {
         "nro_kin": calcular_kin_onda(anio, mes, dia)["nro_kin"],
         "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
-        "nro_tono": calcular_kin_onda(anio, mes, dia)["tono"],
-        "nro_sello": calcular_kin_onda(anio, mes, dia)["sello"]
+        "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
+        "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"]
     } 
     return registro;
 
@@ -1116,8 +1116,10 @@ def guardar_datos():
             "n_fractal": fractal,
             "dia_llegada": dia_llegada,
             "rayo": rayo,
-            "nro_kin": nro_kin,
-            "nro_onda": nro_onda,
+            "nro_kin": calcular_kin_onda(anio, mes, dia)["nro_kin"],
+            "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
+            "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"],
+            "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
             "tipo_dh": tipo_dh,
             "perfil": perfil
        
