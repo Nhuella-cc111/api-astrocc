@@ -1014,7 +1014,7 @@ def guardar_datos():
         perfil = data.get("perfil")
         
 
-        if not nh or not tipo_nh or not perfil :
+        if not nh or not tipo_dh or not perfil :
             return jsonify({"error": "Faltan datos obligatorios"}), 400
 
         # 1. Buscar datos personales en rtas_form
