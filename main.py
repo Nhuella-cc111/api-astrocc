@@ -732,10 +732,11 @@ def calcular_kin_onda(anio, mes, dia):
         nro_onda = ((nro_kin - 1) // 13) + 1
         tono = ((nro_kin - 1) % 13) + 1
         sello = ((nro_kin - 1) % 20) + 1
-
-        # calculo cumple_kin
+        
+        #calculo cumple_kin
         
         fecha_cumple = cumple_kin(nro_kin)
+       
        
         return {
             "nro_kin": nro_kin,
@@ -743,6 +744,8 @@ def calcular_kin_onda(anio, mes, dia):
             "nro_tono": tono,
             "nro_sello": sello,
             "cumple_kin": fecha_cumple
+
+            
         }
     except Exception as e:
         return {"error": str(e)}
@@ -797,16 +800,19 @@ def cumple_kin(kin):
 
  
 
-
+'''
 def procesar_kin_onda(anio, mes, dia):
 
     registro = {
         "nro_kin": calcular_kin_onda(anio, mes, dia)["nro_kin"],
         "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
         "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
-        "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"]
+        "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"],
+       
+        
     } 
     return registro;
+'''
 
 def procesar(anio, mes, dia, hora, minuto, lat, lon):
 
@@ -973,7 +979,7 @@ def api_calcular_kinmaya():
         
 
         # Llamar a función principal
-        resultado = procesar_kin_onda(anio, mes, dia)
+        resultado = calcular_kin_onda(anio, mes, dia)
 
         return jsonify(resultado)
 
