@@ -1010,13 +1010,11 @@ def guardar_datos():
     try:
         data = request.get_json()
         nh = data.get("nh")
-        nro_kin = data.get("nro_kin")
-        nro_onda = data.get("nro_onda")
         tipo_dh = data.get("tipo_dh")
         perfil = data.get("perfil")
         
 
-        if not nh or not nro_kin or not nro_onda or not tipo_dh:
+        if not nh or not tipo_nh or not perfil :
             return jsonify({"error": "Faltan datos obligatorios"}), 400
 
         # 1. Buscar datos personales en rtas_form
@@ -1051,7 +1049,7 @@ def guardar_datos():
         
         fractal = calcular_fractal(sol["signo"], asc["signo"])
         numero_destino = calcular_numero_destino(dia, mes, anio)
-        cumple = cumple_kin(nro_kin)["fecha"]  # Ya devuelve JSON
+        nro_kin = calcular_kin_onda(anio, mes, dia)["nro_kin"]
         elemento = obtener_elemento(planetas_en_signos)
         polaridad = obtener_polaridad(sol["signo"])
         modalidad = obtener_modalidad(sol["signo"])
@@ -1120,6 +1118,7 @@ def guardar_datos():
             "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
             "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"],
             "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
+            "cumple_kin": cumple_kin(nro_kin),
             "tipo_dh": tipo_dh,
             "perfil": perfil
        
