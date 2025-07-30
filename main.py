@@ -733,11 +733,16 @@ def calcular_kin_onda(anio, mes, dia):
         tono = ((nro_kin - 1) % 13) + 1
         sello = ((nro_kin - 1) % 20) + 1
 
+        # calculo cumple_kin
+        
+        fecha_cumple = cumple_kin(nro_kin)
+       
         return {
             "nro_kin": nro_kin,
             "nro_onda": nro_onda,
             "nro_tono": tono,
-            "nro_sello": sello
+            "nro_sello": sello,
+            "cumple_kin": fecha_cumple
         }
     except Exception as e:
         return {"error": str(e)}
@@ -790,23 +795,7 @@ def cumple_kin(kin):
     return fecha_kin.strftime("%d/%m/%Y")
     
 
-'''
-def cumple_kin(kin):
-    if not isinstance(kin, int) or kin < 1 or kin > 260:
-        return None
-
-    ciclo = 260
-    hoy = datetime.now()
-    inicio_ciclo = datetime(2025, 3, 25)  # 25/03/2025
-
-    dias_desde_inicio = (hoy - inicio_ciclo).days
-    
-    ciclos_pasados = dias_desde_inicio // ciclo
-    fecha_ultimo_inicio = inicio_ciclo + timedelta(days=ciclos_pasados * ciclo)
-    fecha_cumple_kin = fecha_ultimo_inicio + timedelta(days=(kin - 1))
-
-    return fecha_cumple_kin.strftime("%d/%m/%Y")
- '''   
+ 
 
 
 def procesar_kin_onda(anio, mes, dia):
