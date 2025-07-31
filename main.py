@@ -1002,6 +1002,21 @@ def api_cumple_kin():
 
 @app.route('/guardar', methods=['POST'])
 def guardar_datos():
+    # Crear el diccionario con los signos
+    planetas_en_signos = {
+        "Sol": sol["signo"],
+        "Luna": luna["signo"],
+        "Mercurio": mercurio["signo"],
+        "Venus": venus["signo"],
+        "Marte": marte["signo"],
+        "Júpiter": jupiter["signo"],
+        "Saturno": saturno["signo"],
+        "Urano": urano["signo"],
+        "Neptuno": neptuno["signo"],
+        "Plutón": pluton["signo"],
+        "Quiron": quiron["signo"],
+        "Lilith": lilith["signo"]
+    }
     try:
         data = request.get_json()
         nh = data.get("nh")
@@ -1046,9 +1061,9 @@ def guardar_datos():
         numero_destino = calcular_numero_destino(dia, mes, anio)
         nro_kin = calcular_kin_onda(anio, mes, dia)["nro_kin"]
         elemento = obtener_elemento(planetas_en_signos)
-        polaridad = obtener_polaridad(sol["signo"])
-        modalidad = obtener_modalidad(sol["signo"])
-        fase = obtener_fase_lunar(sol["grado"], luna["grado"])
+        polaridad = obtener_polaridad(planetas_en_signos)
+        modalidad = obtener_modalidad(planetas_en_signos)
+        fase = obtener_fase_lunar(sol["grados"], luna["grados"])
         rayo  = dia_y_rayo(dia, mes, anio)["color"]
         dia_llegada = dia_y_rayo(dia, mes, anio)["dia"]
 
