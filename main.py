@@ -5,12 +5,22 @@ import requests
 from datetime import date
 from datetime import datetime, timedelta
 import pytz
+import os
+
+
+# Este bloque funciona incluso cuando se llama desde otro archivo (como por Flask)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ruta_ephe = os.path.join(BASE_DIR, "sweph", "ephe")
+swe.set_ephe_path(ruta_ephe)
+
 
 
 
 app = Flask(__name__)
 
-swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
+
+
+#swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
 
 SUPABASE_URL = "https://amjskrqaoiuabscecmji.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtanNrcnFhb2l1YWJzY2VjbWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5Nzg3NDksImV4cCI6MjA2NjU1NDc0OX0.t_9h25ehDGBWGz39YmMPdeeaFyWpQcoDR0POt5Y3CXQ"
@@ -1002,31 +1012,27 @@ def api_cumple_kin():
 
 @app.route('/guardar', methods=['POST'])
 def guardar_datos():
-    # Crear el diccionario con los signos
-    planetas_en_signos = {
-        "Sol": sol["signo"],
-        "Luna": luna["signo"],
-        "Mercurio": mercurio["signo"],
-        "Venus": venus["signo"],
-        "Marte": marte["signo"],
-        "Júpiter": jupiter["signo"],
-        "Saturno": saturno["signo"],
-        "Urano": urano["signo"],
-        "Neptuno": neptuno["signo"],
-        "Plutón": pluton["signo"],
-        "Quiron": quiron["signo"],
-        "Lilith": lilith["signo"]
-    }
+
+    print("Ruta actual del proceso:", os.getcwd())
+    print("Archivos disponibles en sweph/ephe:", os.listdir("sweph/ephe"))
+   
     try:
         data = request.get_json()
         nh = data.get("nh")
         tipo_dh = data.get("tipo_dh")
         perfil = data.get("perfil")
-        
+        fecha_nac = data.get("fecha_nac")  
+        hora_nac = data.get("hora_nac")    
+        lat = data.get("lat")
+        lon = data.get("lon")
+        anio, mes, dia = map(int, fecha_nac.split('-'))
+        hora, minuto = map(int, hora_nac.split(':'))
 
-        if not nh or not tipo_dh or not perfil :
+
+
+        if not nh or not tipo_dh or not perfil or not fecha_nac or not hora_nac :
             return jsonify({"error": "Faltan datos obligatorios"}), 400
-
+        '''
         # 1. Buscar datos personales en rtas_form
         res = supabase.table("rtas_form").select("*").eq("nh", nh).execute()
         if not res.data:
@@ -1038,8 +1044,8 @@ def guardar_datos():
         hora, minuto = map(int, fila['hora_nac'].split(':'))
         lat = float(fila['lat'])
         lon = float(fila['lon'])
-
-        # 2. Cálculos reutilizando tus funciones
+        '''
+            # Ahora sí: llamás a las funciones de los planetas
         sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon)
         luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
         mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
@@ -1055,9 +1061,26 @@ def guardar_datos():
         ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
         nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
         nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
-   
+    
+        # Crear el diccionario con los signos
+        planetas_en_signos = {
+            "Sol": sol["signo"],
+            "Luna": luna["signo"],
+            "Mercurio": mercurio["signo"],
+            "Venus": venus["signo"],
+            "Marte": marte["signo"],
+            "Júpiter": jupiter["signo"],
+            "Saturno": saturno["signo"],
+            "Urano": urano["signo"],
+            "Neptuno": neptuno["signo"],
+            "Plutón": pluton["signo"],
+            "Quiron": quiron["signo"],
+            "Lilith": lilith["signo"]
+        }
+
+  
         
-        fractal = calcular_fractal(sol["signo"], asc["signo"])
+        fractal = calcular_fractal(sol["signo"], ascendente["signo"])
         numero_destino = calcular_numero_destino(dia, mes, anio)
         nro_kin = calcular_kin_onda(anio, mes, dia)["nro_kin"]
         elemento = obtener_elemento(planetas_en_signos)
@@ -1084,7 +1107,7 @@ def guardar_datos():
             "lilith": lilith["signo"],
             "grados_sol": sol["grados"],
             "grados_luna": luna["grados"],
-            "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
+            "luna_nac": fase,
             "gr_sol": sol["grado_en_signo"],
             "c_sol": sol["casa"],
             "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
@@ -1145,3 +1168,7 @@ def guardar_datos():
 @app.route('/')
 def home():
     return "✅ API Carnet Cósmico funcionando. Usá /calcular?nh=..."
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
