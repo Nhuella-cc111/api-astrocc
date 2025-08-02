@@ -793,7 +793,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "Marte": marte["signo"],
         "Jupiter": jupiter["signo"],
         "Saturno": saturno["signo"],
-        "Ascendente": ascendente["signo"]
+        "Asc": ascendente["signo"]
         #"Urano": urano["signo"],
         #"Neptuno": neptuno["signo"],
         #"Plutón": pluton["signo"],
