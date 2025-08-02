@@ -904,6 +904,7 @@ def marcar_procesado_en_rtas_form(supabase: Client, nh: str):
 
 @app.route('/calcular')
 def calcular():
+    configurar_swisseph()
     nh = request.args.get('nh')
     if not nh:
         return jsonify({"error": "Falta parámetro nh"}), 400
@@ -946,7 +947,7 @@ def api_calcular_kinmaya():
 
         # Parseo de datos
         anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
-        hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
+        #hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
         
         
 
