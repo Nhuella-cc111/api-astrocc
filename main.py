@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from supabase import create_client
+from supabase import create_client, Client
 import swisseph as swe
 import requests
 from datetime import date
@@ -8,25 +8,52 @@ import pytz
 import os
 
 
-# Este bloque funciona incluso cuando se llama desde otro archivo (como por Flask)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ruta_ephe = os.path.join(BASE_DIR, "sweph", "ephe")
-swe.set_ephe_path(ruta_ephe)
-
+def configurar_swisseph():
+    ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sweph", "ephe")
+    swe.set_ephe_path(ruta)
+    print("Swiss Ephemeris configurado en:", ruta)
 
 
 
 app = Flask(__name__)
 
 
-
-#swe.set_ephe_path('.')  # Asegurate que los .se1 estén en el mismo folder
-
 SUPABASE_URL = "https://amjskrqaoiuabscecmji.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtanNrcnFhb2l1YWJzY2VjbWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5Nzg3NDksImV4cCI6MjA2NjU1NDc0OX0.t_9h25ehDGBWGz39YmMPdeeaFyWpQcoDR0POt5Y3CXQ"
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# Modalidad por signo
+modalidad_por_signo = {
+    "Aries": "Cardinal", "Cáncer": "Cardinal", "Libra": "Cardinal", "Capricornio": "Cardinal",
+    "Tauro": "Fija", "Leo": "Fija", "Escorpio": "Fija", "Acuario": "Fija",
+    "Géminis": "Mutable", "Virgo": "Mutable", "Sagitario": "Mutable", "Piscis": "Mutable"
+}
+
+# Elemento por signo
+elemento_por_signo = {
+    "Aries": "Fuego", "Leo": "Fuego", "Sagitario": "Fuego",
+    "Tauro": "Tierra", "Virgo": "Tierra", "Capricornio": "Tierra",
+    "Géminis": "Aire", "Libra": "Aire", "Acuario": "Aire",
+    "Cáncer": "Agua", "Escorpio": "Agua", "Piscis": "Agua"
+}
+
+# Polaridad por signo
+polaridad_por_signo = {
+    "Aries": "P", "Géminis": "P", "Leo": "P", "Libra": "P",
+    "Sagitario": "P", "Acuario": "P",
+    "Tauro": "N", "Cáncer": "N", "Virgo": "N",
+    "Escorpio": "N", "Capricornio": "N", "Piscis": "N"
+}
+
+# Pesos por planeta/punto
+pesos = {
+    "Sol": 3, "Luna": 3, "Asc": 3,
+    "Mercurio": 2, "Venus": 2, "Marte": 2,
+    "Jupiter": 1, "Saturno": 1
+}
+
+PLANETAS_ELEMENTO_POLARIDAD = ["Sol", "Luna", "Mercurio", "Venus", "Marte", "Jupiter", "Saturno"] 
 
 def grados_a_dms(grado_decimal):
     grados = int(grado_decimal)
@@ -150,6 +177,7 @@ def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
     # Calcular casas y ascendente
     casas, ascmc = swe.houses(jd, lat, lon, b'P')
     asc = ascmc[0]
+    #print(f"valor asc {asc}")
     signo = obtener_signo(asc)
     grado_signo = asc % 30
     formato_dms = grados_a_dms(grado_signo)
@@ -482,133 +510,46 @@ def obtener_fase_lunar(grados_sol, grados_luna):
         return "LM"  # Luna Menguante
 
 
-
 def obtener_elemento(planetas_en_signos):
-    """
-    Determina el elemento predominante (o elementos en caso de empate).
-
-    Argumentos:
-        planetas_en_signos (dict): Diccionario con nombres de planetas como claves
-                                   y sus signos zodiacales como valores.
-
-    Retorna:
-        str: Elemento(s) predominante(s), separados por "-" si hay empate.
-    """
-
-    elementos_por_signo = {
-        "Aries": "Fuego",
-        "Leo": "Fuego",
-        "Sagitario": "Fuego",
-        "Cáncer": "Agua",
-        "Escorpio": "Agua",
-        "Piscis": "Agua",
-        "Géminis": "Aire",
-        "Libra": "Aire",
-        "Acuario": "Aire",
-        "Tauro": "Tierra",
-        "Virgo": "Tierra",
-        "Capricornio": "Tierra"
-    }
-
-    contador_elementos = {"Fuego": 0, "Agua": 0, "Aire": 0, "Tierra": 0}
-
-    for signo in planetas_en_signos.values():
-        elemento = elementos_por_signo.get(signo)
-        if elemento:
-            contador_elementos[elemento] += 1
-
-    # Encontrar el máximo valor
-    max_valor = max(contador_elementos.values())
-
-    # Obtener todos los elementos que tienen ese valor máximo
-    elementos_dominantes = [
-        elemento for elemento, cantidad in contador_elementos.items()
-        if cantidad == max_valor
-    ]
-
-    # Unirlos con guiones si hay más de uno
-    return "-".join(elementos_dominantes)
-
+    
+    contador = {"Fuego": 0, "Tierra": 0, "Aire": 0, "Agua": 0}
+    for cuerpo, signo in planetas_en_signos.items():
+        if cuerpo in PLANETAS_ELEMENTO_POLARIDAD:
+            elemento = elemento_por_signo.get(signo)
+            if elemento:
+                contador[elemento] += 1
+    max_val = max(contador.values())
+    dominantes = [e for e, v in contador.items() if v == max_val]
+    print("elemento", dict(contador))
+    print(f"elem dominante {dominantes}")
+    return "-".join(dominantes)
 
 def obtener_polaridad(planetas_en_signos):
-    """
-    Retorna la polaridad predominante: 'Positivo', 'Negativo' o 'Equilibrio'.
-    """
+    contador = {"P": 0, "N": 0}
+    for cuerpo, signo in planetas_en_signos.items():
+        if cuerpo in PLANETAS_ELEMENTO_POLARIDAD:
+            polaridad = polaridad_por_signo.get(signo)
+            if polaridad:
+                contador["P" if polaridad == "P" else "N"] += 1
+    max_val = max(contador.values())
+    dominantes = [p for p, v in contador.items() if v == max_val]
+    print("polaridad", dict(contador))
+    print("polaridad dominante", dominantes[0])
+    return "-".join(dominantes)
 
-    polaridad_por_signo = {
-        "Aries": "Positivo",
-        "Leo": "Positivo",
-        "Sagitario": "Positivo",
-        "Géminis": "Positivo",
-        "Libra": "Positivo",
-        "Acuario": "Positivo",
-        "Tauro": "Negativo",
-        "Cáncer": "Negativo",
-        "Virgo": "Negativo",
-        "Escorpio": "Negativo",
-        "Capricornio": "Negativo",
-        "Piscis": "Negativo"
-    }
-
-    contador_polaridad = {"Positivo": 0, "Negativo": 0}
-
-    for signo in planetas_en_signos.values():
-        polaridad = polaridad_por_signo.get(signo)
-        if polaridad:
-            contador_polaridad[polaridad] += 1
-
-    if contador_polaridad["Positivo"] == contador_polaridad["Negativo"]:
-        return "Equilibrio"
-
-    # Devolver directamente la clave con mayor cantidad
-    return max(contador_polaridad, key=contador_polaridad.get)
-
-
+    
 def obtener_modalidad(planetas_en_signos):
-    """
-    Determina la modalidad predominante (o modalidades en caso de empate).
+    contador = {"Cardinal": 0, "Fija": 0, "Mutable": 0}
 
-    Argumentos:
-        planetas_en_signos (dict): Diccionario con nombres de planetas como claves
-                                   y sus signos zodiacales como valores.
-
-    Retorna:
-        str: modalidad(s) predominante(s), separados por "-" si hay empate.
-    """
-
-    modalidad_por_signo = {
-        "Aries": "Cardinal",
-        "Leo": "Fija",
-        "Sagitario": "Mutable",
-        "Cáncer": "Cardinal",
-        "Escorpio": "Fija",
-        "Piscis": "Mutable",
-        "Géminis": "Mutable",
-        "Libra": "Cardinal",
-        "Acuario": "Fija",
-        "Tauro": "Fija",
-        "Virgo": "Mutable",
-        "Capricornio": "Cardinal"
-    }
-
-    contador_modalidad = {"Cardinal": 0, "Fija": 0, "Mutable": 0}
-
-    for signo in planetas_en_signos.values():
+    for cuerpo, signo in planetas_en_signos.items():
         modalidad = modalidad_por_signo.get(signo)
-        if modalidad:
-            contador_modalidad[modalidad] += 1
-
-    # Encontrar el máximo valor
-    max_valor = max(contador_modalidad.values())
-
-    # Obtener todos las modalidades que tienen ese valor máximo
-    modalidad_dominantes = [
-        m for m, cantidad in contador_modalidad.items()
-        if cantidad == max_valor
-    ]
-
-    # Unirlos con guiones si hay más de uno
-    return "-".join(modalidad_dominantes)
+        if modalidad and cuerpo in pesos:
+            contador[modalidad] += pesos[cuerpo]
+    max_val = max(contador.values())
+    dominantes = [m for m, v in contador.items() if v == max_val]
+    #print(f"modalidad ", list(dominantes))
+    return "-".join(dominantes)
+    
     
 
 def calcular_numero_destino(dia, mes, anio):
@@ -850,22 +791,24 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "Mercurio": mercurio["signo"],
         "Venus": venus["signo"],
         "Marte": marte["signo"],
-        "Júpiter": jupiter["signo"],
+        "Jupiter": jupiter["signo"],
         "Saturno": saturno["signo"],
-        "Urano": urano["signo"],
-        "Neptuno": neptuno["signo"],
-        "Plutón": pluton["signo"],
-        "Quiron": quiron["signo"],
-        "Lilith": lilith["signo"]
+        "Ascendente": ascendente["signo"]
+        #"Urano": urano["signo"],
+        #"Neptuno": neptuno["signo"],
+        #"Plutón": pluton["signo"],
+        #"Quiron": quiron["signo"],
+        #"Lilith": lilith["signo"]
     }
-
+    
+    '''
     planetas_nodos = {
         "nodoN": nodoN["signo"],
         "nodoS": nodoS["signo"]
     }    
-    '''
+    
     # Obtener y mostrar el elemento predominante
-    elemento_dominante = obtener_elemento(planetas_en_signos)
+    elemento_dominante = obtener_polanto(planetas_en_signos)
     print("🌟 Elemento predominante en tu carta:", elemento_dominante)
     polaridad_dominante = obtener_polaridad(planetas_en_signos)
     print("🌟 Polaridad predominante en tu carta:", polaridad_dominante)
@@ -891,8 +834,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "pluton": pluton["signo"],
         "quiron": quiron["signo"],
         "lilith": lilith["signo"],
-        "grados_sol": sol["grados"],
-        "grados_luna": luna["grados"],
+        "gr_sol": sol["grados"],
+        "gr_luna": luna["grados"],
         "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
@@ -916,11 +859,11 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "c_neptu": neptuno["casa"],
         "gr_pluto": pluton["grado_en_signo"],
         "c_pluto": pluton["casa"],
-        "nodoN": nodoN["signo"],
-        "gr_nodoN": nodoN["grado_en_signo"],
-        "c_nodoN": nodoN["casa"],
+        "nodos": nodoN["signo"],
+        "gr_nodos": nodoN["grado_en_signo"],
+        "c_nodon": nodoN["casa"],
         "nodoS": nodoS["signo"],
-        "gr_nodoS": nodoS["grado_en_signo"],
+        "gr_nodos":nodoS["grado_en_signo"],
         "c_nodoS": nodoS["casa"],
         "gr_lilith": lilith["grado_en_signo"],
         "c_lilith":  lilith["casa"],
@@ -938,6 +881,25 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         
     }
     return registro
+
+
+
+def marcar_procesado_en_rtas_form(supabase: Client, nh: str):
+    
+    """
+    Marca como procesado=True en la tabla rtas_form para el registro con nh dado.
+    """
+    try:
+        response = supabase.table("rtas_form").update({"procesado": True}).eq("nh", nh).execute()
+        if response.data:
+            print(f"Registro con nh={nh} actualizado como procesado.")
+            return True
+        else:
+            print(f"No se encontró el registro con nh={nh}.")
+            return False
+    except Exception as e:
+        print(f"Error al actualizar procesado: {e}")
+        return False
 
 
 @app.route('/calcular')
@@ -1012,9 +974,9 @@ def api_cumple_kin():
 
 @app.route('/guardar', methods=['POST'])
 def guardar_datos():
-
-    print("Ruta actual del proceso:", os.getcwd())
-    print("Archivos disponibles en sweph/ephe:", os.listdir("sweph/ephe"))
+    configurar_swisseph()
+    #print("Ruta actual del proceso:", os.getcwd())
+    #print("Archivos disponibles en sweph/ephe:", os.listdir("sweph/ephe"))
    
     try:
         data = request.get_json()
@@ -1062,6 +1024,8 @@ def guardar_datos():
         nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
         nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
     
+        
+         
         # Crear el diccionario con los signos
         planetas_en_signos = {
             "Sol": sol["signo"],
@@ -1069,13 +1033,14 @@ def guardar_datos():
             "Mercurio": mercurio["signo"],
             "Venus": venus["signo"],
             "Marte": marte["signo"],
-            "Júpiter": jupiter["signo"],
+            "Jupiter": jupiter["signo"],
             "Saturno": saturno["signo"],
-            "Urano": urano["signo"],
-            "Neptuno": neptuno["signo"],
-            "Plutón": pluton["signo"],
-            "Quiron": quiron["signo"],
-            "Lilith": lilith["signo"]
+            "Asc": ascendente["signo"]
+           # "Urano": urano["signo"],
+           # "Neptuno": neptuno["signo"],
+           # "Plutón": pluton["signo"],
+           # "Quiron": quiron["signo"],
+           # "Lilith": lilith["signo"]
         }
 
   
@@ -1089,6 +1054,9 @@ def guardar_datos():
         fase = obtener_fase_lunar(sol["grados"], luna["grados"])
         rayo  = dia_y_rayo(dia, mes, anio)["color"]
         dia_llegada = dia_y_rayo(dia, mes, anio)["dia"]
+        fecha_cumple = cumple_kin(nro_kin)
+        fecha_obj = datetime.strptime(fecha_cumple, '%d/%m/%Y')
+        fecha_iso = fecha_obj.strftime('%Y-%m-%d')  # Para guardar en Supabase
 
         # 3. Registro final para datoscc
         registro = {
@@ -1105,12 +1073,12 @@ def guardar_datos():
             "pluton": pluton["signo"],
             "quiron": quiron["signo"],
             "lilith": lilith["signo"],
-            "grados_sol": sol["grados"],
-            "grados_luna": luna["grados"],
+            "gr_sol": sol["grados"],
+            "gr_luna": luna["grados"],
             "luna_nac": fase,
             "gr_sol": sol["grado_en_signo"],
             "c_sol": sol["casa"],
-            "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
+            "ascen": ascendente["signo"],
             "gr_asc": ascendente["grado_en_signo"],
             "gr_luna": luna["grado_en_signo"],
             "c_luna": luna["casa"],
@@ -1130,12 +1098,12 @@ def guardar_datos():
             "c_neptu": neptuno["casa"],
             "gr_pluto": pluton["grado_en_signo"],
             "c_pluto": pluton["casa"],
-            "nodoN": nodoN["signo"],
-            "gr_nodoN": nodoN["grado_en_signo"],
-            "c_nodoN": nodoN["casa"],
-            "nodoS": nodoS["signo"],
-            "gr_nodoS": nodoS["grado_en_signo"],
-            "c_nodoS": nodoS["casa"],
+            "nodon": nodoN["signo"],
+            "gr_nodon": nodoN["grado_en_signo"],
+            "c_nodon": nodoN["casa"],
+            "nodos": nodoS["signo"],
+            "gr_nodos": nodoS["grado_en_signo"],
+            "c_nodos": nodoS["casa"],
             "gr_lilith": lilith["grado_en_signo"],
             "c_lilith":  lilith["casa"],
             "gr_quiron": quiron["grado_en_signo"],
@@ -1151,24 +1119,35 @@ def guardar_datos():
             "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
             "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"],
             "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
-            "cumple_kin": cumple_kin(nro_kin),
+            "cumple_kin": fecha_iso ,
             "tipo_dh": tipo_dh,
             "perfil": perfil
        
         }
 
-        # 4. Insertar en Supabase
+         # 2. Insertar en datoscc
         response = supabase.table("datoscc").insert(registro).execute()
-        return jsonify({"status": "ok", "inserted": response.data})
+
+        # 3. Chequear resultado antes de marcar procesado
+        if response.data:
+            marcar_procesado_en_rtas_form(supabase, nh)
+            return jsonify({"status": "ok", "inserted": response.data})
+        else:
+            return jsonify({"error": "No se pudo insertar en datoscc"}), 500
+
+        # return jsonify(dict(registro)) ## para pruebas
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
+    
 
 @app.route('/')
 def home():
     return "✅ API Carnet Cósmico funcionando. Usá /calcular?nh=..."
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    configurar_swisseph()
+    app.run(host="0.0.0.0", port=8000, debug=True)
 
