@@ -783,7 +783,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
     nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
     nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
-    
+    fase = obtener_fase_lunar(sol["grados"], luna["grados"])
     # Crear el diccionario con los signos
     planetas_en_signos = {
         "Sol": sol["signo"],
@@ -836,7 +836,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "lilith": lilith["signo"],
         "gr_sol": sol["grados"],
         "gr_luna": luna["grados"],
-        "luna_nac": obtener_fase_lunar(sol["grados"], luna["grados"]),
+        "luna_nac": fase,
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
         "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
@@ -859,8 +859,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "c_neptu": neptuno["casa"],
         "gr_pluto": pluton["grado_en_signo"],
         "c_pluto": pluton["casa"],
-        "nodos": nodoN["signo"],
-        "gr_nodos": nodoN["grado_en_signo"],
+        "nodon": nodoN["signo"],
+        "gr_nodon": nodoN["grado_en_signo"],
         "c_nodon": nodoN["casa"],
         "nodoS": nodoS["signo"],
         "gr_nodos":nodoS["grado_en_signo"],
