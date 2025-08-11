@@ -757,8 +757,8 @@ def calcular_fractal(signo_sol, signo_asc):
         int: Número de fractal (1-144)
     """
     # Normalizamos mayúsculas
-    signo_sol = signo_sol.upper()
-    signo_asc = signo_asc.upper()
+    #signo_sol = signo_sol
+    #signo_asc = signo_asc
     
     # Lista de signos en orden
     signos = ["Aries", "Tauro", "Geminis", "Cancer", "Leo", "Virgo",
