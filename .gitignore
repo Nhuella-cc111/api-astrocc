@@ -1,0 +1,32 @@
+# Entorno virtual de Python
+venv/
+env/
+
+# Archivos de configuración sensibles
+.env
+*.pem
+
+# Archivos de datos o caché
+*.csv
+cache_geocoding.csv
+
+# Archivos de imágenes y gráficos generados
+*.png
+*.jpg
+*.jpeg
+
+# Carpeta de versiones locales
+Versiones/
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos compilados de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Configuración local de VSCode
+.vscode/

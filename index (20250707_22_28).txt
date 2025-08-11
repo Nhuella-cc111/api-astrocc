@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Formulario Cósmico</title>
+  <style>
+    body {
+      background-color: #F8F5FC;
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 30px;
+      color: #4a4a4a;
+    }
+
+    h2 {
+      text-align: center;
+      color: #A38CC6;
+    }
+
+    .logo {
+      display: block;
+      margin: auto;
+      width: 120px;
+      border-radius: 50%;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      color: #6B4F8A;
+      font-weight: bold;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #C9B9E5;
+      border: none;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .info {
+      font-size: 0.9em;
+      color: #888;
+    }
+
+    .warning {
+      color: red;
+      font-size: 0.9em;
+    }
+
+    .checkbox-wrapper {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .checkbox-wrapper input {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 10% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 8px;
+      overflow-y: scroll;
+      max-height: 80%;
+    }
+
+    .close {
+      float: right;
+      font-size: 18px;
+      cursor: pointer;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+  <img src="https://amjskrqaoiuabscecmji.supabase.co/storage/v1/object/public/fotocc/isologo-CC_arcoiris.png"
+    class="logo" alt="Logo">
+  <h2>SOLICITUD CARNET CÓSMICO</h2>
+
+  <form id="cosmicForm">
+    <label>Nombre cósmico:</label><input type="text" name="nombrecc" required>
+    <label>Nombre:</label><input type="text" name="nombre" required>
+    <label>Apellido:</label><input type="text" name="apellido" required>
+    <label>Fecha de nacimiento:</label><input type="date" name="fecha_nac" required>
+    <label>Hora de nacimiento:</label><input type="time" name="hora_nac" required>
+    <label>Ciudad de nacimiento:</label><input name="ciudad" type="text" required>
+    <label>Provincia:</label><input name="provincia" type="text" required>
+    <label>País:</label><input name="pais" type="text" required>
+    <label>Ciudad de residencia:</label><input name="ciudad_resi" type="text" required>
+    <label>Provincia de residencia:</label><input name="provincia_resi" type="text" required>
+    <label>País de residencia:</label><input name="pais_resi" type="text" required>
+    <label>Email:</label><input type="email" name="email" required>
+    <label>Teléfono:</label><input type="tel" name="telefono">
+    <label>Foto (JPG/PNG, máx. 500KB):</label>
+    <input type="file" name="foto" accept="image/png, image/jpeg" required>
+
+    <div class="checkbox-wrapper">
+      <input type="checkbox" id="politica" required>
+      <label for="politica">Declaro haber leído y aceptado la <a href="#" onclick="mostrarModal()">Política de
+          Privacidad</a>.</label>
+    </div>
+
+    <button type="submit">Enviar</button>
+  </form>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <h3>Política de Privacidad</h3>
+      <p>
+        AVISO DE PRIVACIDAD Y TRATAMIENTO DE DATOS PERSONALES</br>
+
+        Responsable del tratamiento:</br>
+        Proyecto Carnet Cósmico – Registro de Identidad Energética (RIE)</br>
+        Responsables: Romina Cáceres y Ángeles Amat</br>
+
+        Contacto: carnetcosmico.oficial@gmail.com</br>
+
+        Al enviar tus datos personales y aceptar pertenecer al registro nueva huella, declarás haber leído y aceptado
+        esta política de privacidad. Los datos serán tratados conforme a la normativa vigente en materia de protección
+        de datos personales (Ley 25.326 Argentina, RGPD en caso de usuarios europeos, u otra normativa aplicable).</br>
+        Datos que se recopilan</br>
+        Los datos personales recopilados incluyen:</br>
+        Nombre y apellido</br>
+        Fecha de nacimiento</br>
+        Hora de nacimiento</br>
+        Lugar de nacimiento</br>
+        Dirección de correo electrónico</br>
+
+        Otros datos personales energéticos necesarios para la elaboración del Carnet Cósmico y para el Registro de
+        Identidad Energética (por ej.: tipo de diseño humano, kin maya, número de destino, ángel de nacimiento).</br>
+        Finalidad del tratamiento</br>
+        Los datos serán tratados únicamente con los siguientes fines:</br>
+        Elaborar la fórmula energética individual para el Carnet Cósmico.</br>
+        Registrar dicha fórmula dentro del Registro de Identidad Energética (RIE) como parte del Censo Energético
+        Colectivo.</br>
+        Generar estudios evolutivos y mapas de conciencia colectivos (sin identificación personal en las publicaciones
+        de resultados).</br>
+        Facilitar comunicaciones relacionadas con actividades, talleres, encuentros y novedades del Carnet Cósmico.</br>
+        Ofrecer acceso a espacios de aprendizaje, autoconocimiento y evolución personal, tanto individuales como
+        colectivos.</br>
+        Base legal</br>
+        El tratamiento de los datos se realiza sobre la base del consentimiento libre, específico, informado e
+        inequívoco otorgado por el titular de los datos.</br>
+        Conservación</br>
+        Los datos serán conservados:</br>
+        mientras la herramienta Carnet Cósmico esté en funcionamiento o hasta que el titular solicite su supresión.</br>
+        Comunicación de datos a terceros</br>
+        Los datos no serán cedidos a terceros sin consentimiento previo. En caso de necesidad de colaboración con
+        terceros en el marco de la investigación energética colectiva o desarrollo tecnológico (por ej.: equipos
+        técnicos de IA), se solicitará consentimiento específico previo.</br>
+        Los datos podrán ser anonimizados para fines de estudios colectivos (es decir, se usará la información
+        estadística sin identificar a la persona).</br>
+        Transferencias internacionales</br>
+        Actualmente, no se prevén transferencias internacionales de datos.
+        Si esto se modificara (por ejemplo, en el caso de usar servicios tecnológicos que impliquen servidores en otros
+        países), se garantizará el cumplimiento de las normativas aplicables mediante las cláusulas y garantías
+        correspondientes.</br>
+
+        Derechos del titular</br>
+        Como titular de los datos, tenés derecho a:</br>
+        ✅ Acceder a tus datos personales.</br>
+        ✅ Solicitar su rectificación o actualización.</br>
+        ✅ Solicitar su supresión.</br>
+        ✅ Oponerte al tratamiento.</br>
+        ✅ Solicitar la limitación del tratamiento.</br>
+        ✅ Solicitar la portabilidad de tus datos.</br>
+        Podés ejercer estos derechos escribiendo a: carnetcosmico@gmail.com
+        Responderemos tu solicitud en el plazo legalmente establecido.</br>
+
+        Medidas de seguridad</br>
+        Se han implementado medidas técnicas y organizativas adecuadas para garantizar la confidencialidad, integridad y
+        seguridad de los datos personales y evitar su alteración, pérdida, acceso no autorizado o uso indebido.</br>
+
+        Notas adicionales importantes:</br>
+        El hecho de aceptar pertenecer al registro nueva huella implica aceptar que tu fórmula energética será
+        incorporada al Censo Energético Colectivo y podrá ser utilizada (de forma anónima o colectiva) para los fines de
+        mapeo y estudio evolutivo.</br>
+        En ningún caso los datos personales serán usados con fines comerciales ni cedidos a terceros sin
+        consentimiento.</br>
+        La participación es voluntaria y revocable en cualquier momento.</br>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function mostrarModal() {
+      document.getElementById("modal").style.display = "block";
+    }
+    function cerrarModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    document.getElementById("cosmicForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
+      const file = data.get("foto");
+
+      if (file.size > 500000) {
+        alert("La imagen supera los 500KB.");
+        return;
+      }
+
+      const filename = `${data.get("nombre")}_${data.get("apellido")}_${Date.now()}.jpg`.replace(/\s+/g, "_");
+      const upload = await fetch("https://amjskrqaoiuabscecmji.supabase.co/storage/v1/object/fotocc/" + filename, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "Content-Type": file.type
+        },
+        body: file
+      });
+
+      if (!upload.ok) {
+        alert("Error al subir la imagen.");
+        return;
+      }
+
+      const json = Object.fromEntries(data.entries());
+      json.foto = "https://amjskrqaoiuabscecmji.supabase.co/storage/v1/upload/public/fotocc/" + filename;
+
+      fetch("https://hook.us2.make.com/9mk1me5mskzfc4fj8neulfc2g4hbyrij", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(json)
+      }).then(() => {
+        alert("¡Formulario enviado con éxito!");
+        form.reset();
+      }).catch(err => {
+        alert("Error al enviar datos.");
+        console.error(err);
+      });
+    });
+  </script>
+</body>
+
+</html>

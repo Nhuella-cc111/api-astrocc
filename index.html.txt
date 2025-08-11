@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Formulario Cósmico</title>
+  <style>
+    body {
+      background-color: #F8F5FC;
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 30px;
+      color: #4a4a4a;
+    }
+
+    h2 {
+      text-align: center;
+      color: #A38CC6;
+    }
+
+    .logo {
+      display: block;
+      margin: auto;
+      width: 120px;
+      border-radius: 50%;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      color: #6B4F8A;
+      font-weight: bold;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #C9B9E5;
+      border: none;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .info {
+      font-size: 0.9em;
+      color: #888;
+    }
+
+    .warning {
+      color: red;
+      font-size: 0.9em;
+    }
+
+    .checkbox-wrapper {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .checkbox-wrapper input {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 10% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 8px;
+      overflow-y: scroll;
+      max-height: 80%;
+    }
+
+    .close {
+      float: right;
+      font-size: 18px;
+      cursor: pointer;
+      color: #888;
+    }
+
+    .suggestions {
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      background: white;
+      position: absolute;
+      width: calc(100% - 22px);
+      z-index: 1000;
+      display: none;
+    }
+
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .city-container {
+      position: relative;
+    }
+
+    .manual-entry {
+      background-color: #e8f4f8;
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+  <img src="https://amjskrqaoiuabscecmji.supabase.co/storage/v1/object/public/fotocc/isologo-CC_arcoiris.png"
+    class="logo" alt="Logo">
+  <h2>SOLICITUD CARNET CÓSMICO</h2>
+  <p class="info">🌟 Escribe el nombre de tu ciudad y selecciona una opción de la lista de sugerencias.
+  </p>
+
+  <form id="cosmicForm">
+
+    <label>Nombre:</label><input type="text" name="nombre" required>
+    <label>Apellido:</label><input type="text" name="apellido" required>
+    <label>Nombre que te gustaría figure en el carnet:</label><input type="text" name="nombrecc" required>
+    <label>Fecha de nacimiento:</label><input type="date" name="fecha_nac" required>
+    <label>Hora de nacimiento:</label><input type="time" name="hora_nac" required>
+
+    <label>Ciudad de nacimiento:</label>
+    <div class="city-container">
+      <input id="ciudad" name="ciudad" type="text" autocomplete="off" required>
+      <div id="suggestions-ciudad" class="suggestions"></div>
+    </div>
+    <div id="warning-ciudad" class="warning"></div>
+    <label>Provincia:</label>
+    <input id="provincia" name="provincia" type="text">
+    <label>País:</label>
+    <input id="pais" name="pais" type="text">
+
+    <label>Ciudad de residencia:</label>
+    <div class="city-container">
+      <input id="ciudad_resi" name="ciudad_resi" type="text" autocomplete="off" required>
+      <div id="suggestions-resi" class="suggestions"></div>
+    </div>
+    <div id="warning-resi" class="warning"></div>
+    <label>Provincia de residencia:</label>
+    <input id="provincia_resi" name="provincia_resi" type="text">
+    <label>País de residencia:</label>
+    <input id="pais_resi" name="pais_resi" type="text">
+
+    <label>Email:</label><input type="email" name="email" required>
+    <label>Teléfono:</label><input type="tel" name="telefono">
+    <label>Foto (JPG/PNG, máx. 1000KB):</label>
+    <input type="file" name="foto" accept="image/png, image/jpeg">
+
+    <!-- Campos ocultos para coordenadas -->
+    <input type="hidden" id="lat" name="lat">
+    <input type="hidden" id="lon" name="lon">
+    <input type="hidden" id="lat_resi" name="lat_resi">
+    <input type="hidden" id="lon_resi" name="lon_resi">
+
+
+    <div class="checkbox-wrapper">
+      <input type="checkbox" id="politica" required>
+      <label for="politica">Declaro haber leído y aceptado la <a href="#" onclick="mostrarModal()">Política de
+          Privacidad</a>.</label>
+    </div>
+
+    <button type="submit">Enviar</button>
+  </form>
+
+  <p id="mensaje-error" style="color:red; display:none; font-weight:bold; text-align:center;">
+    Ya has completado el formulario anteriormente 💫 ¡Gracias por ser parte!
+  </p>
+
+  <p id="mensaje-exito" style="color:green; display:none; font-weight:bold; text-align:center;">
+    ¡Formulario enviado con éxito! El Equipo CC festeja tu llegada 🌈
+  </p>
+
+
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <h3>Política de Privacidad</h3>
+      <p>
+        AVISO DE PRIVACIDAD Y TRATAMIENTO DE DATOS PERSONALES</br>
+
+        Responsable del tratamiento:</br>
+        Proyecto Carnet Cósmico – Registro de Identidad Energética (RIE)</br>
+        Responsables: Romina Cáceres y Ángeles Amat</br>
+
+        Contacto: carnetcosmico.oficial@gmail.com</br>
+
+        Al enviar tus datos personales y aceptar pertenecer al registro nueva huella, declarás haber leído y aceptado
+        esta política de privacidad. Los datos serán tratados conforme a la normativa vigente en materia de protección
+        de datos personales (Ley 25.326 Argentina, RGPD en caso de usuarios europeos, u otra normativa aplicable).</br>
+        Datos que se recopilan</br>
+        Los datos personales recopilados incluyen:</br>
+        Nombre y apellido</br>
+        Fecha de nacimiento</br>
+        Hora de nacimiento</br>
+        Lugar de nacimiento</br>
+        Dirección de correo electrónico</br>
+
+        Otros datos personales energéticos necesarios para la elaboración del Carnet Cósmico y para el Registro de
+        Identidad Energética (por ej.: tipo de diseño humano, kin maya, número de destino, ángel de nacimiento).</br>
+        Finalidad del tratamiento</br>
+        Los datos serán tratados únicamente con los siguientes fines:</br>
+        Elaborar la fórmula energética individual para el Carnet Cósmico.</br>
+        Registrar dicha fórmula dentro del Registro de Identidad Energética (RIE) como parte del Censo Energético
+        Colectivo.</br>
+        Generar estudios evolutivos y mapas de conciencia colectivos (sin identificación personal en las publicaciones
+        de resultados).</br>
+        Facilitar comunicaciones relacionadas con actividades, talleres, encuentros y novedades del Carnet Cósmico.</br>
+        Ofrecer acceso a espacios de aprendizaje, autoconocimiento y evolución personal, tanto individuales como
+        colectivos.</br>
+        Base legal</br>
+        El tratamiento de los datos se realiza sobre la base del consentimiento libre, específico, informado e
+        inequívoco otorgado por el titular de los datos.</br>
+        Conservación</br>
+        Los datos serán conservados:</br>
+        mientras la herramienta Carnet Cósmico esté en funcionamiento o hasta que el titular solicite su supresión.</br>
+        Comunicación de datos a terceros</br>
+        Los datos no serán cedidos a terceros sin consentimiento previo. En caso de necesidad de colaboración con
+        terceros en el marco de la investigación energética colectiva o desarrollo tecnológico (por ej.: equipos
+        técnicos de IA), se solicitará consentimiento específico previo.</br>
+        Los datos podrán ser anonimizados para fines de estudios colectivos (es decir, se usará la información
+        estadística sin identificar a la persona).</br>
+        Transferencias internacionales</br>
+        Actualmente, no se prevén transferencias internacionales de datos.
+        Si esto se modificara (por ejemplo, en el caso de usar servicios tecnológicos que impliquen servidores en otros
+        países), se garantizará el cumplimiento de las normativas aplicables mediante las cláusulas y garantías
+        correspondientes.</br>
+
+        Derechos del titular</br>
+        Como titular de los datos, tenés derecho a:</br>
+        ✅ Acceder a tus datos personales.</br>
+        ✅ Solicitar su rectificación o actualización.</br>
+        ✅ Solicitar su supresión.</br>
+        ✅ Oponerte al tratamiento.</br>
+        ✅ Solicitar la limitación del tratamiento.</br>
+        ✅ Solicitar la portabilidad de tus datos.</br>
+        Podés ejercer estos derechos escribiendo a: carnetcosmico@gmail.com
+        Responderemos tu solicitud en el plazo legalmente establecido.</br>
+
+        Medidas de seguridad</br>
+        Se han implementado medidas técnicas y organizativas adecuadas para garantizar la confidencialidad, integridad y
+        seguridad de los datos personales y evitar su alteración, pérdida, acceso no autorizado o uso indebido.</br>
+
+        Notas adicionales importantes:</br>
+        El hecho de aceptar pertenecer al registro nueva huella implica aceptar que tu fórmula energética será
+        incorporada al Censo Energético Colectivo y podrá ser utilizada (de forma anónima o colectiva) para los fines de
+        mapeo y estudio evolutivo.</br>
+        En ningún caso los datos personales serán usados con fines comerciales ni cedidos a terceros sin
+        consentimiento.</br>
+        La participación es voluntaria y revocable en cualquier momento.</br>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    function mostrarModal() {
+      document.getElementById("modal").style.display = "block";
+    }
+    function cerrarModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    // Base de datos expandida con ciudades principales del mundo
+    const ciudadesMundo = [
+      // Argentina
+      {ciudad: "Buenos Aires", provincia: "Ciudad Autónoma de Buenos Aires", pais: "Argentina", lat: -34.6118, lon: -58.3960},
+      {ciudad: "Córdoba", provincia: "Córdoba", pais: "Argentina", lat: -31.4201, lon: -64.1888},
+      {ciudad: "Rosario", provincia: "Santa Fe", pais: "Argentina", lat: -32.9442, lon: -60.6505},
+      {ciudad: "La Plata", provincia: "Buenos Aires", pais: "Argentina", lat: -34.9215, lon: -57.9545},
+      {ciudad: "Mar del Plata", provincia: "Buenos Aires", pais: "Argentina", lat: -38.0055, lon: -57.5426},
+      {ciudad: "Mendoza", provincia: "Mendoza", pais: "Argentina", lat: -32.8895, lon: -68.8458},
+      {ciudad: "Tucumán", provincia: "Tucumán", pais: "Argentina", lat: -26.8083, lon: -65.2176},
+      {ciudad: "Salta", provincia: "Salta", pais: "Argentina", lat: -24.7821, lon: -65.4232},
+      {ciudad: "Santa Fe", provincia: "Santa Fe", pais: "Argentina", lat: -31.6333, lon: -60.7000},
+
+      // España
+      {ciudad: "Madrid", provincia: "Comunidad de Madrid", pais: "España", lat: 40.4168, lon: -3.7038},
+      {ciudad: "Barcelona", provincia: "Cataluña", pais: "España", lat: 41.3851, lon: 2.1734},
+      {ciudad: "Valencia", provincia: "Comunidad Valenciana", pais: "España", lat: 39.4699, lon: -0.3763},
+      {ciudad: "Sevilla", provincia: "Andalucía", pais: "España", lat: 37.3891, lon: -5.9845},
+      {ciudad: "Zaragoza", provincia: "Aragón", pais: "España", lat: 41.6488, lon: -0.8891},
+      {ciudad: "Málaga", provincia: "Andalucía", pais: "España", lat: 36.7213, lon: -4.4214},
+      {ciudad: "Murcia", provincia: "Región de Murcia", pais: "España", lat: 37.9922, lon: -1.1307},
+      {ciudad: "Palma", provincia: "Islas Baleares", pais: "España", lat: 39.5696, lon: 2.6502},
+      {ciudad: "Las Palmas", provincia: "Canarias", pais: "España", lat: 28.1248, lon: -15.4300},
+      {ciudad: "Bilbao", provincia: "País Vasco", pais: "España", lat: 43.2627, lon: -2.9253},
+
+      // Francia
+      {ciudad: "París", provincia: "Île-de-France", pais: "Francia", lat: 48.8566, lon: 2.3522},
+      {ciudad: "Marsella", provincia: "Provenza-Alpes-Costa Azul", pais: "Francia", lat: 43.2965, lon: 5.3698},
+      {ciudad: "Lyon", provincia: "Auvernia-Ródano-Alpes", pais: "Francia", lat: 45.7640, lon: 4.8357},
+      {ciudad: "Toulouse", provincia: "Occitania", pais: "Francia", lat: 43.6047, lon: 1.4442},
+      {ciudad: "Niza", provincia: "Provenza-Alpes-Costa Azul", pais: "Francia", lat: 43.7102, lon: 7.2620},
+
+      // Italia
+      {ciudad: "Roma", provincia: "Lacio", pais: "Italia", lat: 41.9028, lon: 12.4964},
+      {ciudad: "Milán", provincia: "Lombardía", pais: "Italia", lat: 45.4642, lon: 9.1900},
+      {ciudad: "Nápoles", provincia: "Campania", pais: "Italia", lat: 40.8518, lon: 14.2681},
+      {ciudad: "Turín", provincia: "Piamonte", pais: "Italia", lat: 45.0703, lon: 7.6869},
+      {ciudad: "Palermo", provincia: "Sicilia", pais: "Italia", lat: 38.1157, lon: 13.3615},
+
+      // Reino Unido
+      {ciudad: "Londres", provincia: "Inglaterra", pais: "Reino Unido", lat: 51.5074, lon: -0.1278},
+      {ciudad: "Birmingham", provincia: "Inglaterra", pais: "Reino Unido", lat: 52.4862, lon: -1.8904},
+      {ciudad: "Manchester", provincia: "Inglaterra", pais: "Reino Unido", lat: 53.4808, lon: -2.2426},
+      {ciudad: "Glasgow", provincia: "Escocia", pais: "Reino Unido", lat: 55.8642, lon: -4.2518},
+      {ciudad: "Liverpool", provincia: "Inglaterra", pais: "Reino Unido", lat: 53.4084, lon: -2.9916},
+
+      // Alemania
+      {ciudad: "Berlín", provincia: "Berlín", pais: "Alemania", lat: 52.5200, lon: 13.4050},
+      {ciudad: "Hamburgo", provincia: "Hamburgo", pais: "Alemania", lat: 53.5511, lon: 9.9937},
+      {ciudad: "Múnich", provincia: "Baviera", pais: "Alemania", lat: 48.1351, lon: 11.5820},
+      {ciudad: "Colonia", provincia: "Renania del Norte-Westfalia", pais: "Alemania", lat: 50.9375, lon: 6.9603},
+      {ciudad: "Frankfurt", provincia: "Hesse", pais: "Alemania", lat: 50.1109, lon: 8.6821},
+
+      // Australia
+      {ciudad: "Sídney", provincia: "Nueva Gales del Sur", pais: "Australia", lat: -33.8688, lon: 151.2093},
+      {ciudad: "Melbourne", provincia: "Victoria", pais: "Australia", lat: -37.8136, lon: 144.9631},
+      {ciudad: "Brisbane", provincia: "Queensland", pais: "Australia", lat: -27.4698, lon: 153.0251},
+      {ciudad: "Perth", provincia: "Australia Occidental", pais: "Australia", lat: -31.9505, lon: 115.8605},
+      {ciudad: "Adelaida", provincia: "Australia Meridional", pais: "Australia", lat: -34.9285, lon: 138.6007},
+
+      // Otros países latinoamericanos
+      {ciudad: "São Paulo", provincia: "São Paulo", pais: "Brasil", lat: -23.5505, lon: -46.6333},
+      {ciudad: "Rio de Janeiro", provincia: "Rio de Janeiro", pais: "Brasil", lat: -22.9068, lon: -43.1729},
+      {ciudad: "Brasília", provincia: "Distrito Federal", pais: "Brasil", lat: -15.8267, lon: -47.9218},
+      {ciudad: "Santiago", provincia: "Región Metropolitana", pais: "Chile", lat: -33.4489, lon: -70.6693},
+      {ciudad: "Lima", provincia: "Lima", pais: "Perú", lat: -12.0464, lon: -77.0428},
+      {ciudad: "Bogotá", provincia: "Cundinamarca", pais: "Colombia", lat: 4.7110, lon: -74.0721},
+      {ciudad: "Ciudad de México", provincia: "Ciudad de México", pais: "México", lat: 19.4326, lon: -99.1332},
+      {ciudad: "Caracas", provincia: "Distrito Capital", pais: "Venezuela", lat: 10.4806, lon: -66.9036},
+      {ciudad: "Quito", provincia: "Pichincha", pais: "Ecuador", lat: -0.1807, lon: -78.4678},
+      {ciudad: "La Paz", provincia: "La Paz", pais: "Bolivia", lat: -16.5000, lon: -68.1193},
+      {ciudad: "Asunción", provincia: "Asunción", pais: "Paraguay", lat: -25.2637, lon: -57.5759},
+      {ciudad: "Montevideo", provincia: "Montevideo", pais: "Uruguay", lat: -34.9011, lon: -56.1645}
+    ];
+
+    function cleanCityName(name) {
+      return name.replace(/^(Municipio de |Municipality of |Province of |Provincia de )/i, '').trim();
+    }
+
+    function cleanProvinceName(name) {
+      return name.replace(/( Province| provincia)$/i, '').trim();
+    }
+
+    function getCountryName(countryCode) {
+      const countries = {
+        'AR': 'Argentina', 'BR': 'Brasil', 'CL': 'Chile', 'UY': 'Uruguay', 'PY': 'Paraguay',
+        'PE': 'Perú', 'BO': 'Bolivia', 'VE': 'Venezuela', 'CO': 'Colombia', 'EC': 'Ecuador',
+        'MX': 'México', 'ES': 'España', 'FR': 'Francia', 'IT': 'Italia', 'DE': 'Alemania',
+        'GB': 'Reino Unido', 'AU': 'Australia', 'US': 'Estados Unidos', 'CA': 'Canadá', 'AD': 'Andorra'
+      };
+      return countries[countryCode] || countryCode;
+    }
+
+    function setupCityAutocomplete(inputId, suggestionsId, provId, paisId, latId, lonId, warnId) {
+      const input = document.getElementById(inputId);
+      const suggestionsDiv = document.getElementById(suggestionsId);
+      let selectedFromList = false;
+
+      function showSuggestions(cities) {
+        suggestionsDiv.innerHTML = '';
+
+        cities.forEach(city => {
+          const item = document.createElement('div');
+          item.className = 'suggestion-item';
+          item.textContent = `${city.ciudad}, ${city.provincia}, ${city.pais}`;
+          item.onmousedown = (e) => {
+            e.preventDefault();
+            selectCity(city);
+          };
+          suggestionsDiv.appendChild(item);
+        });
+
+        suggestionsDiv.style.display = cities.length > 0 ? 'block' : 'none';
+      }
+
+      function selectCity(city) {
+        input.value = cleanCityName(city.ciudad);
+        const provInput = document.getElementById(provId);
+        const paisInput = document.getElementById(paisId);
+        const latInput = document.getElementById(latId);
+        const lonInput = document.getElementById(lonId);
+        const warnElement = document.getElementById(warnId);
+
+        if (provInput) provInput.value = cleanProvinceName(city.provincia);
+        if (paisInput) paisInput.value = city.pais;
+        if (latInput) latInput.value = city.lat;
+        if (lonInput) lonInput.value = city.lon;
+        if (warnElement) warnElement.innerText = '';
+
+        suggestionsDiv.style.display = 'none';
+        selectedFromList = true;
+      }
+
+      function normalizeString(str) {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      }
+
+      input.addEventListener('input', function () {
+        const query = this.value.trim();
+        const warning = document.getElementById(warnId);
+        selectedFromList = false;
+
+        if (query.length < 2) {
+          suggestionsDiv.style.display = 'none';
+          if (warning) warning.innerText = '';
+          return;
+        }
+
+        const normalizedQuery = normalizeString(query);
+
+        const localResults = ciudadesMundo.filter(city =>
+          normalizeString(city.ciudad).includes(normalizedQuery) ||
+          normalizeString(city.provincia).includes(normalizedQuery)
+        ).slice(0, 8);
+
+        const hasResults = localResults.length > 0;
+        showSuggestions(localResults);
+
+        if (!hasResults) {
+          fetchFromAPI(query).then(apiResults => {
+            const combinedResults = [...localResults, ...apiResults]
+              .filter((city, index, self) =>
+                index === self.findIndex(c => c.ciudad === city.ciudad && c.provincia === city.provincia)
+              )
+              .slice(0, 8);
+
+            showSuggestions(combinedResults);
+          }).catch(() => {
+            showSuggestions(localResults);
+          });
+        }
+      });
+
+      async function fetchFromAPI(query) {
+        try {
+          const response = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=bd5e378503939ddaee76f12ad7a97608`);
+          const data = await response.json();
+
+          return data.map(place => ({
+            ciudad: cleanCityName(place.name),
+            provincia: cleanProvinceName(place.state || place.name),
+            pais: getCountryName(place.country),
+            lat: place.lat,
+            lon: place.lon
+          }));
+        } catch (error) {
+          console.log('API no disponible, usando solo base local');
+          return [];
+        }
+      }
+
+      input.addEventListener('blur', function () {
+        setTimeout(() => {
+          suggestionsDiv.style.display = 'none';
+
+          if (this.value && !selectedFromList) {
+            const warning = document.getElementById(warnId);
+            if (warning) warning.innerText = "⚠️ Debes seleccionar una ciudad de la lista de sugerencias.";
+          }
+        }, 300);
+      });
+
+      input.addEventListener('focus', function () {
+        if (this.value.length >= 2) {
+          const event = new Event('input');
+          this.dispatchEvent(event);
+        }
+      });
+    }
+
+    setupCityAutocomplete("ciudad", "suggestions-ciudad", "provincia", "pais", "lat", "lon", "warning-ciudad");
+    setupCityAutocomplete("ciudad_resi", "suggestions-resi", "provincia_resi", "pais_resi", "lat_resi", "lon_resi", "warning-resi");
+
+    document.getElementById("cosmicForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
+      const file = data.get("foto");
+
+      // Validar tamaño de imagen si existe
+      if (file && file.size > 0) {
+        if (file.size > 1000000) {
+          alert("La imagen supera los 1000KB.");
+          return;
+        }
+      }
+
+      try {
+        const json = Object.fromEntries(data.entries());
+
+        // Si hay imagen, subirla primero y obtener la URL
+        if (file && file.size > 0) {
+          const filename = `${data.get("nombre")}_${data.get("apellido")}_${Date.now()}.jpg`.replace(/\s+/g, "_");
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const upload = await fetch(`https://amjskrqaoiuabscecmji.supabase.co/storage/v1/object/fotocc/${filename}`, {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtanNrcnFhb2l1YWJzY2VjbWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5Nzg3NDksImV4cCI6MjA2NjU1NDc0OX0.t_9h25ehDGBWGz39YmMPdeeaFyWpQcoDR0POt5Y3CXQ"
+            },
+            body: formData
+          });
+
+          if (!upload.ok) {
+            const errorText = await upload.text();
+            console.error('Upload error:', errorText);
+            alert("Error al subir la imagen: " + errorText);
+            return;
+          }
+
+          // Agregar al JSON el link final
+          json.foto = `https://amjskrqaoiuabscecmji.supabase.co/storage/v1/object/public/fotocc/${filename}`;
+        } else {
+          // Si no hay foto, asegurarse de no enviar ese campo
+          delete json.foto;
+        }
+
+        // Enviar todo el JSON (con o sin foto) a Make
+        const response = await fetch("https://hook.us2.make.com/9mk1me5mskzfc4fj8neulfc2g4hbyrij", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(json)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+
+          if (result.error === "duplicado") {
+            document.getElementById("mensaje-error").style.display = "block";
+            return;
+          }
+
+          if (result.estado === "ok") {
+            document.getElementById("mensaje-exito").style.display = "block";
+            setTimeout(() => {
+              document.getElementById("mensaje-exito").style.display = "none";
+            }, 5000);
+            form.reset();
+            window.history.pushState("", document.title, window.location.pathname + window.location.search);
+          } else {
+            alert("Hubo un problema al guardar el formulario.");
+          }
+        } else {
+          throw new Error('Error en el envío');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert("Error al procesar el formulario.");
+      }
+    });
+  </script>
+</body>
+
+</html>

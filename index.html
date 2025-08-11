@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Formulario CC</title>
+  <meta charset="UTF-8" />
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXc-M5KkrrrD79WSKI0pd3eZ0IrTrGUjg&libraries=places"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, button, textarea { width: 100%; padding: 8px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Formulario de Datos Cósmicos</h2>
+  <form id="cosmicForm">
+    <label>Nombre cósmico (nombrecc):</label>
+    <input type="text" name="nombrecc" required>
+
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required>
+
+    <label>Apellido:</label>
+    <input type="text" name="apellido" required>
+
+    <label>Fecha de nacimiento:</label>
+    <input type="date" name="fecha_nac" required>
+
+    <label>Hora de nacimiento:</label>
+    <input type="time" name="hora_nac" required>
+
+    <label>Ciudad de nacimiento:</label>
+    <input id="ciudad" name="ciudad" type="text" required>
+
+    <label>Provincia de nacimiento:</label>
+    <input id="provincia" name="provincia" type="text" readonly>
+
+    <label>País de nacimiento:</label>
+    <input id="pais" name="pais" type="text" readonly>
+
+    <label>Ciudad de residencia:</label>
+    <input id="ciudad_resi" name="ciudad_resi" type="text" required>
+
+    <label>Provincia de residencia:</label>
+    <input id="provincia_resi" name="provincia_resi" type="text" readonly>
+
+    <label>País de residencia:</label>
+    <input id="pais_resi" name="pais_resi" type="text" readonly>
+
+    <label>Email:</label>
+    <input type="email" name="email" required>
+
+    <label>Teléfono:</label>
+    <input type="tel" name="telefono">
+
+    <label>Foto (opcional):</label>
+    <input type="file" name="foto" accept="image/*">
+
+    <button type="submit">Enviar</button>
+  </form>
+
+  <script>
+    function initializeAutocomplete(id, provId, paisId) {
+      const input = document.getElementById(id);
+      const options = { types: ['(cities)'] };
+      const autocomplete = new google.maps.places.Autocomplete(input, options);
+      autocomplete.addListener('place_changed', function () {
+        const place = autocomplete.getPlace();
+        let provincia = "", pais = "";
+        place.address_components.forEach(component => {
+          if (component.types.includes("administrative_area_level_1")) provincia = component.long_name;
+          if (component.types.includes("country")) pais = component.long_name;
+        });
+        if (provId) document.getElementById(provId).value = provincia;
+        if (paisId) document.getElementById(paisId).value = pais;
+      });
+    }
+
+    initializeAutocomplete("ciudad", "provincia", "pais");
+    initializeAutocomplete("ciudad_resi", "provincia_resi", "pais_resi");
+
+    document.getElementById("cosmicForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
+      const json = {};
+
+      for (const [key, value] of data.entries()) {
+        if (key === "foto" && value.size > 0) {
+          const base64 = await toBase64(value);
+          json[key] = base64;
+        } else {
+          json[key] = value;
+        }
+      }
+
+      const webhookURL = "https://hook.us2.make.com/kbem0d0dpdcklx5nwvzvgaebay6r483u";
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json)
+      }).then(response => {
+        alert("Datos enviados correctamente");
+        form.reset();
+      }).catch(error => {
+        console.error("Error:", error);
+        alert("Hubo un error al enviar los datos");
+      });
+    });
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+      });
+    }
+  </script>
+</body>
+</html>
