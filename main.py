@@ -761,8 +761,8 @@ def calcular_fractal(signo_sol, signo_asc):
     signo_asc = signo_asc.upper()
     
     # Lista de signos en orden
-    signos = ["ARIES", "TAURO", "GEMINIS", "CANCER", "LEO", "VIRGO",
-              "LIBRA", "ESCORPIO", "SAGITARIO", "CAPRICORNIO", "ACUARIO", "PISCIS"]
+    signos = ["Aries", "Tauro", "Geminis", "Cancer", "Leo", "Virgo",
+              "Libra", "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"]
     
     if signo_sol not in signos or signo_asc not in signos:
         raise ValueError("Signo inválido. Use uno de: " + ", ".join(signos))
