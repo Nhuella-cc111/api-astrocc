@@ -6,6 +6,7 @@ from datetime import date
 from datetime import datetime, timedelta
 import pytz
 import os
+import math
 
 
 def configurar_swisseph():
@@ -25,24 +26,24 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Modalidad por signo
 modalidad_por_signo = {
-    "Aries": "Cardinal", "Cáncer": "Cardinal", "Libra": "Cardinal", "Capricornio": "Cardinal",
+    "Aries": "Cardinal", "Cancer": "Cardinal", "Libra": "Cardinal", "Capricornio": "Cardinal",
     "Tauro": "Fija", "Leo": "Fija", "Escorpio": "Fija", "Acuario": "Fija",
-    "Géminis": "Mutable", "Virgo": "Mutable", "Sagitario": "Mutable", "Piscis": "Mutable"
+    "Geminis": "Mutable", "Virgo": "Mutable", "Sagitario": "Mutable", "Piscis": "Mutable"
 }
 
 # Elemento por signo
 elemento_por_signo = {
     "Aries": "Fuego", "Leo": "Fuego", "Sagitario": "Fuego",
     "Tauro": "Tierra", "Virgo": "Tierra", "Capricornio": "Tierra",
-    "Géminis": "Aire", "Libra": "Aire", "Acuario": "Aire",
-    "Cáncer": "Agua", "Escorpio": "Agua", "Piscis": "Agua"
+    "Geminis": "Aire", "Libra": "Aire", "Acuario": "Aire",
+    "Cancer": "Agua", "Escorpio": "Agua", "Piscis": "Agua"
 }
 
 # Polaridad por signo
 polaridad_por_signo = {
-    "Aries": "P", "Géminis": "P", "Leo": "P", "Libra": "P",
+    "Aries": "P", "Geminis": "P", "Leo": "P", "Libra": "P",
     "Sagitario": "P", "Acuario": "P",
-    "Tauro": "N", "Cáncer": "N", "Virgo": "N",
+    "Tauro": "N", "Cancer": "N", "Virgo": "N",
     "Escorpio": "N", "Capricornio": "N", "Piscis": "N"
 }
 
@@ -55,6 +56,114 @@ pesos = {
 
 PLANETAS_ELEMENTO_POLARIDAD = ["Sol", "Luna", "Mercurio", "Venus", "Marte", "Jupiter", "Saturno"] 
 
+'''
+Diseño Humano
+'''
+tabla_puertas = [
+    {"puerta":17, "inicio": 3.750,   "fin": 9.375  },
+    {"puerta":21, "inicio": 9.375,   "fin": 15.000 },
+    {"puerta":51, "inicio": 15.000,  "fin": 20.625 },
+    {"puerta":42, "inicio": 20.625,  "fin": 26.250 },
+    {"puerta": 3, "inicio": 26.250,  "fin": 31.875 },
+    {"puerta":27, "inicio": 31.875,  "fin": 37.500 },
+    {"puerta":24, "inicio": 37.500,  "fin": 43.125 },
+    {"puerta": 2, "inicio": 43.125,  "fin": 48.750 },
+    {"puerta":23, "inicio": 48.750,  "fin": 54.375 },
+    {"puerta": 8, "inicio": 54.375,  "fin": 60.000 },
+    {"puerta":20, "inicio": 60.000,  "fin": 65.625 },
+    {"puerta":16, "inicio": 65.625,  "fin": 71.250 },
+    {"puerta":35, "inicio": 71.250,  "fin": 76.875 },
+    {"puerta":45, "inicio": 76.875,  "fin": 82.500 },
+    {"puerta":12, "inicio": 82.500,  "fin": 88.125 },
+    {"puerta":15, "inicio": 88.125,  "fin": 93.750 },
+    {"puerta":52, "inicio": 93.750,  "fin": 99.375 },
+    {"puerta":39, "inicio": 99.375,  "fin": 105.000},
+    {"puerta":53, "inicio": 105.000, "fin": 110.625},
+    {"puerta":62, "inicio": 110.625, "fin": 116.250},
+    {"puerta":56, "inicio": 116.250, "fin": 121.875},
+    {"puerta":31, "inicio": 121.875, "fin": 127.500},
+    {"puerta":33, "inicio": 127.500, "fin": 133.125},
+    {"puerta": 7, "inicio": 133.125, "fin": 138.750},
+    {"puerta": 4, "inicio": 138.750, "fin": 144.375},
+    {"puerta":29, "inicio": 144.375, "fin": 150.000},
+    {"puerta":59, "inicio": 150.000, "fin": 155.625},
+    {"puerta":40, "inicio": 155.625, "fin": 161.250},
+    {"puerta":64, "inicio": 161.250, "fin": 166.875},
+    {"puerta":47, "inicio": 166.875, "fin": 172.500},
+    {"puerta": 6, "inicio": 172.500, "fin": 178.125},
+    {"puerta":46, "inicio": 178.125, "fin": 183.750},
+    {"puerta":18, "inicio": 183.750, "fin": 189.375},
+    {"puerta":48, "inicio": 189.375, "fin": 195.000},
+    {"puerta":57, "inicio": 195.000, "fin": 200.625},
+    {"puerta":32, "inicio": 200.625, "fin": 206.250},
+    {"puerta":50, "inicio": 206.250, "fin": 211.875},
+    {"puerta":28, "inicio": 211.875, "fin": 217.500},
+    {"puerta":44, "inicio": 217.500, "fin": 223.125},
+    {"puerta": 1, "inicio": 223.125, "fin": 228.750},
+    {"puerta":43, "inicio": 228.750, "fin": 234.375},
+    {"puerta":14, "inicio": 234.375, "fin": 240.000},
+    {"puerta":34, "inicio": 240.000, "fin": 245.625},
+    {"puerta": 9, "inicio": 245.625, "fin": 251.250},
+    {"puerta": 5, "inicio": 251.250, "fin": 256.875},
+    {"puerta":26, "inicio": 256.875, "fin": 262.500},
+    {"puerta":11, "inicio": 262.500, "fin": 268.125},
+    {"puerta":10, "inicio": 268.125, "fin": 273.750},
+    {"puerta":58, "inicio": 273.750, "fin": 279.375},
+    {"puerta":38, "inicio": 279.375, "fin": 285.000},
+    {"puerta":54, "inicio": 285.000, "fin": 290.625},
+    {"puerta":61, "inicio": 290.625, "fin": 296.250},
+    {"puerta":60, "inicio": 296.250, "fin": 301.875},
+    {"puerta":41, "inicio": 301.875, "fin": 307.500},
+    {"puerta":19, "inicio": 307.500, "fin": 313.125},
+    {"puerta":13, "inicio": 313.125, "fin": 318.750},
+    {"puerta":49, "inicio": 318.750, "fin": 324.375},
+    {"puerta":30, "inicio": 324.375, "fin": 330.000},
+    {"puerta":55, "inicio": 330.000, "fin": 335.625},
+    {"puerta":37, "inicio": 335.625, "fin": 341.250},
+    {"puerta":63, "inicio": 341.250, "fin": 346.875},
+    {"puerta":22, "inicio": 346.875, "fin": 352.500},
+    {"puerta":36, "inicio": 352.500, "fin": 358.125},
+    {"puerta":25, "inicio": 358.125, "fin": 3.750  }
+]
+'''
+tabla_puertas = []
+for i in range(64):
+    inicio = i * 5.625
+    fin = inicio + 5.625
+    tabla_puertas.append({
+        "puerta": i + 1,
+        "inicio": inicio,
+        "fin": fin
+    })
+print(tabla_puertas)
+'''
+
+def fecha_sol_inconsciente(anio, mes, dia, hora, minuto):
+    """
+    Devuelve la fecha y hora exacta 88.3 días antes del nacimiento.
+    """
+    fecha_nacimiento = datetime(anio, mes, dia, hora, minuto)
+
+    # Restar 88 días
+    delta = timedelta(days=88, hours=7, minutes=12, seconds=50) # 0.3 días ≈ 7h12m
+    fecha_inconsciente= fecha_nacimiento - delta
+
+    # Forzar hora y minutos a 00:00
+    fecha_inconsciente = fecha_inconsciente.replace(hour=12, minute=0, second=0, microsecond=0)
+
+    #fecha_nacimiento = datetime(anio, mes, dia, hora, minuto)
+    #delta = timedelta(days=88, hours=0, minutes=0)  # 0.3 días ≈ 7h12m
+    #fecha_inconsciente = fecha_nacimiento - fecha_resultado
+    #print(f"fecha inconsciente: {fecha_inconsciente}")
+    return {
+        "anio_i":fecha_inconsciente.year,
+        "mes_i":fecha_inconsciente.month,
+        "dia_i":fecha_inconsciente.day,
+        "hora_i":fecha_inconsciente.hour,
+        "minuto_i":fecha_inconsciente.minute
+    }
+
+
 def grados_a_dms(grado_decimal):
     grados = int(grado_decimal)
     minutos = int((grado_decimal - grados) * 60)
@@ -65,8 +174,8 @@ def grados_a_dms(grado_decimal):
 def calcular_casa(jd, lat, lon, grado_planeta):
 
     cuspides, _ = swe.houses(jd, lat, lon, b'P')  # <--- invertido!
-    print(f"Cúspides: {cuspides}")
-    print(f"Grado planeta: {grado_planeta}")
+    #print(f"Cúspides: {cuspides}")
+    #print(f"Grado planeta: {grado_planeta}")
     casa = 12
     for i in range(12):
         inicio = cuspides[i]
@@ -81,7 +190,31 @@ def calcular_casa(jd, lat, lon, grado_planeta):
                 break
     return casa
 
+import requests
 
+def obtener_offset_inconsciente(anio, mes, dia, hora, minuto, lat, lon):
+    """
+    Devuelve el offset UTC estándar (sin horario de verano) para cualquier lat/lon y fecha.
+    Usa la API de TimeZoneDB.
+    """
+    try:
+        api_key = "0KL8FYY73NT2"  # Reemplaza por tu propia API key si tienes otra
+        url = (
+            f"http://api.timezonedb.com/v2.1/get-time-zone"
+            f"?key={api_key}&format=json&by=position&lat={lat}&lng={lon}"
+            f"&time={anio}-{mes:02d}-{dia:02d}T{hora:02d}:{minuto:02d}:00"
+        )
+        response = requests.get(url)
+        data = response.json()
+        # El offset estándar está en 'gmtOffset' menos 'dst' si está en horario de verano
+        # Pero para el estándar puro, usamos 'gmtOffset' menos 'dst' (si dst==1)
+        offset = data.get("gmtOffset", 0)
+        if data.get("dst", "0") == "1":
+            offset = offset - data.get("dstSavings", 0)
+        return offset / 3600
+    except Exception as e:
+        print(f"❌ ERROR en TimeZoneDB para lat={lat} lon={lon} → {e}")
+        return 0  # fallback
 
 def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
     # Asignamos zona horaria correcta (Comodoro usa zona Argentina)
@@ -90,7 +223,7 @@ def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
     offset = tz.utcoffset(dt_local).total_seconds() / 3600
     return offset
 '''
-def obtener_offset_horario(lat, lon):
+def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
     try:
         print(f"Llamando a TimeZoneDB con lat={lat}, lon={lon}")
         url = f"http://api.timezonedb.com/v2.1/get-time-zone?key=0KL8FYY73NT2&format=json&by=position&lat={lat}&lng={lon}"
@@ -114,11 +247,12 @@ def obtener_geolocalizacion():
             return jsonify({"error": "Faltan parámetros"})
 
         direccion = f"{ciudad}, {provincia}, {pais}"
-        api_key = "21f0075720f44914b2cfdd8e64c27b68"  # <-- reemplazá por tu key real
+        api_key = "21f0075720f44914b2cfdd8e64c27b68"  
         url = f"https://api.opencagedata.com/geocode/v1/json?q={direccion}&key={api_key}&language=es&pretty=1"
 
         response = requests.get(url)
         data = response.json()
+        print(f"Geolocalización para {direccion}: {data}")
 
         if data["results"]:
             geometry = data["results"][0]["geometry"]
@@ -135,24 +269,31 @@ def obtener_geolocalizacion():
 
 def obtener_signo(grados):
     signos = [
-        "Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra",
+        "Aries", "Tauro", "Geminis", "Cancer", "Leo", "Virgo", "Libra",
         "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"
     ]
     return signos[int(grados // 30)]
 
 
-def obtener_sol(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_sol(anio, mes, dia, hora, minuto, lat, lon, inconsciente):
     print(
         f"🛰️ Procesando Sol → {anio}-{mes}-{dia} {hora}:{minuto}, lat: {lat}, lon: {lon}"
     )
-    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
+    print(f"inconsciente: {inconsciente}")
+    if inconsciente: 
+        offset= 0
+    else:
+        offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     hora_utc_decimal = hora + minuto / 60 - offset
+    print(f"horautc_decimal: {hora_utc_decimal}")
     jd = swe.julday(anio, mes, dia, hora_utc_decimal)
 
     # Posición del Sol
     grados_sol = swe.calc_ut(jd, swe.SUN)[0][0]
+    print(f"Grados Sol: {grados_sol}")
     signo = obtener_signo(grados_sol)
     grado_signo = grados_sol % 30
+    print(f"Grado en signo: {grado_signo}")
     formato_dms = grados_a_dms(grado_signo)
 
     # Determinar casa
@@ -166,6 +307,31 @@ def obtener_sol(anio, mes, dia, hora, minuto, lat, lon):
         "casa": casa
     }
 
+def obtener_tierra(anio, mes, dia, hora, minuto, lat, lon):
+    
+    sol= obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
+
+    offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
+    hora_utc_decimal = hora + minuto / 60 - offset
+    jd = swe.julday(anio, mes, dia, hora_utc_decimal)
+    # Posición del Sol
+    grados_tierra = (sol["grados"]+180)%360
+    
+    signo = obtener_signo(grados_tierra)
+    grado_signo = grados_tierra % 30
+    
+    formato_dms = grados_a_dms(grado_signo)
+
+    # Determinar casa
+    casa = calcular_casa(jd, lat, lon, grados_tierra)
+
+    return {
+        "signo": signo,
+        "grados": round(grados_tierra, 2),
+        "grado_en_signo": formato_dms,
+        "signo_completo": f"{formato_dms} {signo}",
+        "casa": casa
+    }
 
 def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
     # Calcular hora UTC
@@ -765,10 +931,32 @@ def procesar_kin_onda(anio, mes, dia):
     return registro;
 '''
 
+
 def procesar(anio, mes, dia, hora, minuto, lat, lon):
 
+    """
+    Esta función recibe un número de identificación (nh) y realiza los siguientes pasos:
+    1. Busca los datos de nacimiento (fecha_nac, hora_nac, lat, lon) desde una tabla en Supabase.
+    2. Calcula los datos astrológicos completos usando una función existente (planetas, grados, casas, etc.).
+    3. A partir de los grados zodiacales del Sol y Tierra (consciente e inconsciente), calcula:
+       - El perfil de Diseño Humano (líneas del Sol consciente e inconsciente).
+       - El tipo de Diseño Humano (Generador, Proyector, Manifestador, Reflector) según los centros definidos.
+       - La cruz de encarnación, usando las puertas del Sol y Tierra.
+    4. Devuelve un diccionario con todos los datos calculados.
+
+    Requiere funciones auxiliares:
+    - obtener_linea(grado): devuelve la línea 1–6 según el grado zodiacal.
+    - calcular_perfil(grado_sol_consciente, grado_sol_inconsciente)
+    - calcular_tipo(canales_activos)
+    - calcular_cruz(puerta_sol, puerta_tierra)
+
+    Las puertas se obtienen a partir de los grados zodiacales de los planetas usando una tabla de mapeo.
+    """
+
+    
+
     # Ahora sí: llamás a las funciones de los planetas
-    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon)
+    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
     luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
     mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
     venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
@@ -784,6 +972,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
     nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
     fase = obtener_fase_lunar(sol["grados"], luna["grados"])
+    tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
     # Crear el diccionario con los signos
     planetas_en_signos = {
         "Sol": sol["signo"],
@@ -794,28 +983,104 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "Jupiter": jupiter["signo"],
         "Saturno": saturno["signo"],
         "Asc": ascendente["signo"]
-        #"Urano": urano["signo"],
-        #"Neptuno": neptuno["signo"],
-        #"Plutón": pluton["signo"],
-        #"Quiron": quiron["signo"],
-        #"Lilith": lilith["signo"]
+    
     }
     
-    '''
-    planetas_nodos = {
-        "nodoN": nodoN["signo"],
-        "nodoS": nodoS["signo"]
-    }    
+    anio_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["anio_i"]
+    mes_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["mes_i"]
+    dia_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["dia_i"]
+    hora_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["hora_i"]
+    min_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["minuto_i"]
     
-    # Obtener y mostrar el elemento predominante
-    elemento_dominante = obtener_polanto(planetas_en_signos)
-    print("🌟 Elemento predominante en tu carta:", elemento_dominante)
-    polaridad_dominante = obtener_polaridad(planetas_en_signos)
-    print("🌟 Polaridad predominante en tu carta:", polaridad_dominante)
-    modalidad_dominante = obtener_modalidad(planetas_en_signos)
-    print("🌟 Modalidad predominante en tu carta:", modalidad_dominante)
-    '''
+    grados_in =88.3
+    #grados_inlun = 88*12.92
 
+    
+    sol_inconsciente =      (sol["grados"]-grados_in)%360
+    print(f"grado sol inconsciente {sol_inconsciente}")
+    tierra_inconsciente =   (tierra["grados"]-grados_in)%360
+    '''
+    fecha_natal = datetime(anio, mes, dia, hora, minuto)
+    deltain = timedelta(days=88, hours=7, minutes=12, seconds=50) # 0.3 días ≈ 7h12m
+    fecha_inco= fecha_natal - deltain
+    fecha_inco = fecha_inco.replace(hour=0, minute=0, second=0, microsecond=0)
+    '''
+    luna_in = obtener_luna(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)
+    print(f"grado luna inconsciente {luna_in['grados']}")
+    luna_inconsciente =     luna_in["grados"]
+    #luna_inconsciente =     (luna["grados"]-grados_inlun)%360
+        
+    nodon_inconsciente =    obtener_nodoN(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    nodos_inconsciente =    obtener_nodo_sur(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    mercurio_inconsciente = obtener_mercurio(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    venus_inconsciente =    obtener_venus(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    marte_inconsciente =    obtener_marte(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    jupiter_inconsciente =  obtener_jupiter(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    saturno_inconsciente =  obtener_saturno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    urano_inconsciente =    obtener_urano(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    neptuno_inconsciente =  obtener_neptuno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    pluton_inconsciente =   obtener_pluton(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    
+    
+    #grado_sol_inconsciente = sol["grados"]- grados_in
+    # Obtener puertas activadas por los planetas
+    puertas_activadas = []
+    
+    for planetas in (
+        [sol, tierra, luna, nodoN, nodoS, mercurio, venus, marte, jupiter, saturno, urano, neptuno, pluton,
+                     ]):
+        tolerancia = 0
+        puerta_dict = obtener_puerta(planetas["grados"], tolerancia)
+        puerta = puerta_dict["puerta"] if puerta_dict else None
+        print(f"puerta activa : {puerta}")
+        if puerta:
+            puertas_activadas.append(puerta)
+            '''
+            if nombre == "sol":
+                puertasol_con = puerta_dict["puerta"] 
+            if nombre == "tierra":
+                puertatierra_con = puerta_dict["puerta"] 
+            ''' 
+        
+    for nombre, grado_inconsciente in zip(["sol_inconsciente","tierra_inconsciente", "luna_inconsciente", "nodon_inconsciente", "nodoS_inconsciente", "mercurio_inconsciente", 
+         "venus_inconsciente", "marte_inconsciente", "jupiter_inconsciente", "saturno_inconsciente", "urano_inconsciente", 
+         "neptuno_inconsciente", "pluton_inconsciente"],
+        [sol_inconsciente, tierra_inconsciente, luna_inconsciente, nodon_inconsciente, nodos_inconsciente,
+                     mercurio_inconsciente, venus_inconsciente, marte_inconsciente, jupiter_inconsciente, saturno_inconsciente,
+                     urano_inconsciente, neptuno_inconsciente, pluton_inconsciente]):
+        # Para los planetas inconscientes,
+        tolerancia = 0
+        puerta_dict = obtener_puerta(grado_inconsciente, tolerancia)
+        puerta = puerta_dict["puerta"] if puerta_dict else None
+        print(f"puerta activa :{nombre} : {puerta}")
+        if puerta:
+            puertas_activadas.append(puerta)
+            ''''
+            if nombre == "sol_inconsciente":
+                puertasol_in = puerta_dict["puerta"] 
+            if nombre == "tierra_inconsciente":    
+                puertatierra_in = puerta_dict["puerta"]
+            '''     
+
+    # Detectar canales activos
+    canales_activos = detectar_canales(puertas_activadas)
+    print(f"canales activos: {canales_activos}")
+    # Calcular tipo
+    tipo = calcular_tipo(canales_activos)
+    print(f"tipo dh {tipo}")
+    
+    perfil = calcular_perfil( sol["grados"], sol_inconsciente)
+    print(f"perfil dh {perfil}")
+    print(f"grado_sol_iconsciente dh {sol_inconsciente}")
+    print(f"grado_sol_consciente dh {sol["grados"]}")
+    #tipo = calcular_tipo(canales_activos)
+    #puerta_con =puertasol_con&","& puertatierra_con
+    #puerta_in = puertasol_in&","& puertatierra_in
+    #cruz = calcular_cruz(puerta_con, puerta_in)
+
+    print(f"Perfil: {perfil}")
+    print(f"Tipo: {tipo}")
+    #print(f"Cruz de encarnación: {cruz}")
     registro = {
         "fecha_nac": date(anio, mes, dia),
         "hora": hora,
@@ -834,8 +1099,6 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "pluton": pluton["signo"],
         "quiron": quiron["signo"],
         "lilith": lilith["signo"],
-        "gr_sol": sol["grados"],
-        "gr_luna": luna["grados"],
         "luna_nac": fase,
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
@@ -875,12 +1138,18 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "n_destino": calcular_numero_destino(dia, mes, anio),
         "fr_144": calcular_fractal(sol["signo"], ascendente["signo"]),
         "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
-        "rayo": dia_y_rayo(dia, mes, anio)["color"]
+        "rayo": dia_y_rayo(dia, mes, anio)["color"],
+        "tipo_dh": tipo,
+        "perfil": perfil
         
         
         
     }
-    return registro
+    #if request.args.get("modo") == "string":
+    return "-".join(str(v) for v in registro.values())
+   # else:
+    #    return registro
+    #return registro
 
 
 
@@ -900,6 +1169,587 @@ def marcar_procesado_en_rtas_form(supabase: Client, nh: str):
     except Exception as e:
         print(f"Error al actualizar procesado: {e}")
         return False
+   
+
+def obtener_puerta(grado, tolerancia):
+    """
+    Devuelve el número de puerta correspondiente al grado zodiacal.
+    Si el grado está a menos de `tolerancia` del fin de la puerta, devuelve la puerta siguiente.
+    """
+    for i, puerta_dict in enumerate(tabla_puertas):
+        inicio = puerta_dict["inicio"]
+        fin = puerta_dict["fin"]
+        puerta = puerta_dict["puerta"]
+        # Manejo de rangos normales
+        if inicio < fin:
+            if inicio <= grado < fin:
+                '''
+                # Si está cerca del fin, buscar la puerta siguiente
+                if fin - grado < tolerancia:
+                    # Buscar la puerta cuyo inicio sea fin (la siguiente en la tabla)
+                    for siguiente in tabla_puertas:
+                        if abs(siguiente["inicio"] - fin) < 0.001:
+                            return siguiente
+                if grado - inicio < tolerancia: 
+                    for anterior in tabla_puertas:
+                        if abs(anterior["fin"] - inicio) < 0.001:
+                            return anterior  
+                '''                 
+                return puerta_dict
+        else:
+            # Rango que cruza 0 Aries
+            if grado >= inicio or grado < fin:
+                '''
+                if (fin - grado) % 360 < tolerancia:
+                    for siguiente in tabla_puertas:
+                        if abs(siguiente["inicio"] - fin) < 0.001:
+                            return siguiente
+                if (grado - inicio) % 360 < tolerancia:
+                    for anterior in tabla_puertas:
+                        if abs(anterior["fin"] - inicio) < 0.001:
+                            return anterior   
+                '''                 
+                return puerta_dict
+    return puerta_dict
+
+
+
+def obtener_linea(grado, tolerancia):
+    """
+    Devuelve la línea (1 a 6) dentro de la puerta, según el grado zodiacal.
+    """
+    puerta = obtener_puerta(grado, tolerancia)
+    if puerta is None:
+        return None
+    inicio = puerta["inicio"]
+    grado_relativo = grado - inicio
+    linea = int(grado_relativo // 0.9375) + 1
+    print(f"linea {puerta}- {grado} - gr_relativo {grado_relativo} - {linea}")
+    if linea < 1:
+        linea = 1
+    return min(linea, 6)
+
+
+def calcular_perfil( grado_sol_consciente, grado_sol_inconsciente):
+    '''
+    Devuelve el perfil como string, por ejemplo '3/5'.
+    '''
+    linea_consciente = obtener_linea(grado_sol_consciente, 0)
+    linea_inconsciente = obtener_linea(grado_sol_inconsciente, 0)
+    
+    return f"{linea_consciente}/{linea_inconsciente}"
+
+
+
+
+# Función para calcular el tipo según centros definidos
+def calcular_tipo(canales_activos):
+    centros_por_canal = {
+        "1-8": ["G", "Garganta"],
+        "2-14": ["Sacral", "G"],
+        "3-60": ["Raíz", "Sacral"],
+        "4-63": ["Cabeza", "Ajna"],
+        "5-15": ["Sacral", "G"],
+        "6-59": ["Sacral", "Emocional"],
+        "7-31": ["G", "Garganta"],
+        "9-52": ["Sacral", "Raíz"],
+        "10-20": ["G", "Garganta"],
+        "11-56": ["Ajna", "Garganta"],
+        "12-22": ["Emocional", "Garganta"],
+        "13-33": ["G", "Garganta"],
+        "16-48": ["Bazo", "Garganta"],
+        "17-62": ["Ajna", "Garganta"],
+        "18-58": ["Bazo", "Raíz"],
+        "19-49": ["Raíz", "Emocional"],
+        "20-34": ["Garganta", "Sacral"],
+        "21-45": ["Corazón", "Garganta"],
+        "22-12": ["Emocional", "Garganta"],
+        "23-43": ["Garganta", "Ajna"],
+        "24-61": ["Ajna", "Cabeza"],
+        "25-51": ["G", "Corazón"],
+        "26-44": ["Corazón", "Bazo"],
+        "27-50": ["Sacral", "Bazo"],
+        "28-38": ["Bazo", "Raíz"],
+        "29-46": ["Sacral", "G"],
+        "30-41": ["Emocional", "Raíz"],
+        "32-54": ["Bazo", "Raíz"],
+        "34-57": ["Sacral", "Bazo"],
+        "35-36": ["Garganta", "Emocional"],
+        "37-40": ["Emocional", "Corazón"],
+        "39-55": ["Raíz", "Emocional"],
+        "42-53": ["Sacral", "Raíz"],
+        "47-64": ["Ajna", "Cabeza"],
+        "48-16": ["Bazo", "Garganta"],
+        "49-19": ["Emocional", "Raíz"],
+        "57-10": ["Bazo", "G"],
+    }
+    centros_definidos = set()
+    for canal in canales_activos:
+        centros = centros_por_canal.get(canal, [])
+        centros_definidos.update(centros)
+
+    tiene_sacral = "Sacral" in centros_definidos
+    tiene_garganta = "Garganta" in centros_definidos
+    tiene_motor = any(c in centros_definidos for c in ["Sacral", "Corazón", "Emocional", "Raíz"])
+
+    # Generador Manifestante: Sacral y Garganta conectados directamente (por canal 20-34)
+    if "20-34" in canales_activos:
+        return "GM"
+    elif tiene_sacral and tiene_garganta:
+        return "GM"
+    elif tiene_sacral:
+        return "G"
+    elif tiene_garganta and tiene_motor:
+        return "M"
+    elif centros_definidos:
+        return "P"
+    else:
+        return "R"    
+
+def detectar_canales(puertas_activadas):
+    """
+    Devuelve una lista de canales activos a partir de las puertas activadas.
+    """
+    canales_posibles = {
+    "1-8", "2-14", "3-60", "4-63", "5-15", "6-59", "7-31", "9-52",
+    "10-20", "11-56", "12-22", "13-33", "16-48", "17-62", "18-58",
+    "19-49", "20-34", "21-45", "22-12", "23-43", "24-61", "25-51",
+    "26-44", "27-50", "28-38", "29-46", "30-41", "32-54", "34-57",
+    "35-36", "37-40", "39-55", "42-53", "47-64", "48-16", "49-19", "57-10"
+}
+   
+    canales = []
+    puertas_set = set(puertas_activadas)
+    for canal in canales_posibles:
+        p1, p2 = map(int, canal.split("-"))
+        if p1 in puertas_set and p2 in puertas_set:
+            canales.append(canal)
+    return canales
+
+'''
+def _parse_par(par):
+    """
+    Acepta: "24,44"  ó  [24,44]  ó  (24,44)
+    Devuelve: tupla ordenada de enteros, p.ej. (24, 44)
+    """
+    if isinstance(par, str):
+        nums = [int(x.strip()) for x in par.split(",") if x.strip()]
+    else:
+        nums = [int(x) for x in par]
+    if len(nums) != 2:
+        raise ValueError("Cada par debe tener exactamente 2 puertas")
+    return tuple(sorted(nums))
+
+def _clave(pares_consc, pares_inconsc):
+    """
+    Devuelve una clave canónica ((c1,c2),(i1,i2)) para usar en el diccionario.
+    """
+    c = _parse_par(pares_consc)
+    i = _parse_par(pares_inconsc)
+    return (c, i)
+
+# Mapa: ((pSolCon,pTieCon),(pSolDis,pTieDis)) -> nombre de cruz
+# (Si te llega invertido Sol/Tierra dentro de cada par, igual matchea porque ordenamos)
+CRUCES = {
+    _clave("9,16", "40,37"): "Angulo Derecho de la Planificacion 4",
+    _clave("9,16", "64,63"): "Cruz Yuxtapuesta del Foco",
+    _clave("9,16", "64,63"): "Angulo Izquierdo de la Identificacion 2",
+    _clave("5,35", "64,63"): "Angulo Derecho de la Consciencia 4",
+    _clave("5,35", "47,22"): "Cruz Yuxtapuesta de los Habitos",
+    _clave("5,35", "47,22"): "Angulo Izquierdo de la Separacion 2",
+    _clave("26,45", "47,22"): "Angulo Derecho de la Autoridad 4",
+    _clave("26,45", "6,36"): "Cruz Yuxtapuesta del Embaucador",
+    _clave("26,45", "6,36"): "Angulo Izquierdo de la Confrontacion 2",
+    _clave("11,12", "6,36"): "Angulo Derecho del Eden 4",
+    _clave("11,12", "46,25"): "Cruz Yuxtapuesta de las Ideas",
+    _clave("11,12", "46,25"): "Angulo Izquierdo de la Educacion 2",
+    _clave("10,15", "46,25"): "Angulo Derecho del Receptaculo del Amor 4",
+    _clave("10,15", "18,17"): "Cruz Yuxtapuesta del Comportamiento",
+    _clave("10,15", "18,17"): "Angulo Izquierdo de la Prevencion 2",
+    _clave("58,52", "18,17"): "Angulo Derecho del Servicio 4",
+    _clave("58,52", "48,21"): "Cruz Yuxtapuesta de la Vitalidad",
+    _clave("58,52", "48,21"): "Angulo Izquierdo de las Exigencias 2",
+    _clave("38,39", "48,21"): "Angulo Derecho de la Tension 4",
+    _clave("38,39", "57,51"): "Cruz Yuxtapuesta de la Oposicion",
+    _clave("38,39", "57,51"): "Angulo Izquierdo del Individualismo 2",
+    _clave("54,53", "57,51"): "Angulo Derecho de la Penetracion 4",
+    _clave("54,53", "32,42"): "Cruz Yuxtapuesta de la Ambicion",
+    _clave("54,53", "32,42"): "Angulo Izquierdo de los Ciclos 2",
+    _clave("32,42", "62,61"): "Angulo Derecho del Maya 4",
+    _clave("61,62", "50,3"): "Cruz Yuxtapuesta del Pensamiento",
+    _clave("61,62", "50,3"): "Angulo Izquierdo del Oscurecimiento 2",
+    _clave("60,56", "50,3"): "Angulo Derecho de las Leyes 4",
+    _clave("60,56", "28,27"): "Cruz Yuxtapuesta de la Limitacion",
+    _clave("60,56", "28,27"): "Angulo Izquierdo de la Distraccion 2",
+    _clave("41,31", "28,27"): "Angulo Derecho de lo Inesperado 4",
+    _clave("41,31", "44,24"): "Cruz Yuxtapuesta de la Fantasia",
+    _clave("41,31", "44,24"): "Angulo Izquierdo del Alpha 2",
+    _clave("19,33", "44,24"): "Angulo Derecho de los Cuatro Caminos 4",
+    _clave("19,33", "1,2"): "Cruz Yuxtapuesta de la Necesidad",
+    _clave("19,33", "1,2"): "Angulo Izquierdo del Refinamiento 2",
+    _clave("13,7", "1,2"): "Angulo Derecho de la Esfinge",
+    _clave("13,7", "43,23"): "Cruz Yuxtapuesta de Escuchar",
+    _clave("13,7", "43,23"): "Angulo Izquierdo de las Mascaras",
+    _clave("49,4", "43,23"): "Angulo Derecho de las Explicaciones",
+    _clave("49,4", "14,8"): "Cruz Yuxtapuesta de los Principios",
+    _clave("49,4", "14,8"): "Angulo Izquierdo de la Revolucion",
+    _clave("30,29", "14,8"): "Angulo Derecho del Contagio",
+    _clave("30,29", "34,20"): "Cruz Yuxtapuesta del Destino",
+    _clave("30,29", "34,20"): "Angulo Izquierdo de la Industria",
+    _clave("55,59", "34,20"): "Angulo Derecho del Fenix Durmiente (hasta 2027)",
+    _clave("55,59", "9,16"): "Cruz Yuxtapuesta de los Humores Cambiantes",
+    _clave("55,59", "9,16"): "Angulo Izquierdo del Espiritu",
+    _clave("37,40", "9,16"): "Angulo Derecho de la Planificacion",
+    _clave("37,40", "5,35"): "Cruz Yuxtapuesta de los Acuerdos",
+    _clave("37,40", "5,35"): "Angulo Izquierdo de la Migracion",
+    _clave("63,64", "5,35"): "Angulo Derecho de la Consciencia",
+    _clave("63,64", "26,45"): "Cruz Yuxtapuesta de las Dudas",
+    _clave("63,64", "26,45"): "Angulo Izquierdo del Dominio",
+    _clave("22,47", "26,45"): "Angulo Derecho de la Autoridad",
+    _clave("22,47", "11,12"): "Cruz Yuxtapuesta de la Gracia",
+    _clave("22,47", "11,12"): "Angulo Izquierdo de Informar",
+    _clave("36,6", "11,12"): "Angulo Derecho del Eden",
+    _clave("36,6", "10,15"): "Cruz Yuxtapuesta de la Crisis",
+    _clave("36,6", "10,15"): "Angulo Izquierdo del Plano Mundano",
+    _clave("25,46", "10,15"): "Angulo Derecho del Receptaculo del Amor",
+    _clave("25,46", "58,52"): "Cruz Yuxtapuesta de la Inocencia",
+    _clave("25,46", "58,52"): "Angulo Izquierdo de la Sanacion",
+    _clave("17,18", "58,52"): "Angulo Derecho del Servicio",
+    _clave("17,18", "38,39"): "Cruz Yuxtapuesta de las Opiniones",
+    _clave("17,18", "38,39"): "Angulo Izquierdo de la Convulsion",
+    _clave("21,48", "38,39"): "Angulo Derecho de la Tension",
+    _clave("21,48", "54,53"): "Cruz Yuxtapuesta del Control",
+    _clave("21,48", "54,53"): "Angulo Izquierdo del Empeno",
+    _clave("51,57", "54,53"): "Angulo Derecho de la Penetracion",
+    _clave("51,57", "61,62"): "Cruz Yuxtapuesta del Shock",
+    _clave("51,57", "61,62"): "Angulo Izquierdo del Clarion",
+    _clave("42,32", "61,62"): "Angulo Derecho del Maya",
+    _clave("42,32", "60,56"): "Cruz Yuxtapuesta de la Culminacion",
+    _clave("42,32", "60,56"): "Angulo Izquierdo de la Limitacion",
+    _clave("3,50", "60,56"): "Angulo Derecho de las Leyes",
+    _clave("3,50", "41,31"): "Cruz Yuxtapuesta de la Mutacion",
+    _clave("3,50", "41,31"): "Angulo Izquierdo de los Deseos",
+    _clave("27,28", "41,31"): "Angulo Derecho de lo Inesperado",
+    _clave("27,28", "19,33"): "Cruz Yuxtapuesta de Cuidar",
+    _clave("27,28", "19,33"): "Angulo Izquierdo del Alineamiento",
+    _clave("24,44", "19,33"): "Angulo Derecho de los Cuatro Caminos",
+    _clave("24,44", "13,7"): "Cruz Yuxtapuesta de la Racionalizacion",
+    _clave("24,44", "13,7"): "Angulo Izquierdo de la Encarnacion",
+    _clave("2,1", "13,7"): "Angulo Derecho de la Esfinge 2",
+    _clave("2,1", "49,4"): "Cruz Yuxtapuesta del Chofer",
+    _clave("2,1", "49,4"): "Angulo Izquierdo del Desafio",
+    _clave("23,43", "49,4"): "Angulo Derecho de las Explicaciones 2",
+    _clave("23,43", "30,29"): "Cruz Yuxtapuesta de la Asimilacion",
+    _clave("23,43", "30,29"): "Angulo Izquierdo de la Dedicacion",
+    _clave("8,14", "30,29"): "Angulo Derecho del Contagio 2",
+    _clave("8,14", "55,59"): "Cruz Yuxtapuesta de la Contribucion",
+    _clave("8,14", "55,59"): "Angulo Izquierdo de la Incertidumbre",
+    _clave("20,34", "55,59"): "Angulo Derecho del Fenix Durmiente 2",
+    _clave("20,34", "37,40"): "Cruz Yuxtapuesta del Ahora",
+    _clave("20,34", "37,40"): "Angulo Izquierdo de la Dualidad",
+    _clave("16,9", "37,40"): "Angulo Derecho de la Planificacion 2",
+    _clave("16,9", "63,64"): "Cruz Yuxtapuesta de la Experimentacion",
+    _clave("16,9", "63,64"): "Angulo Izquierdo de la Identificacion",
+    _clave("35,5", "63,64"): "Angulo Derecho de la Consciencia 2",
+    _clave("35,5", "22,47"): "Cruz Yuxtapuesta de la Experiencia",
+    _clave("35,5", "22,47"): "Angulo Izquierdo de la Separacion",
+    _clave("45,26", "22,47"): "Angulo Derecho de la Autoridad 2",
+    _clave("45,26", "36,6"): "Cruz Yuxtapuesta de la Posesion",
+    _clave("45,26", "36,6"): "Angulo Izquierdo de la Confrontacion",
+    _clave("12,11", "36,6"): "Angulo Derecho del Eden 2",
+    _clave("12,11", "25,46"): "Cruz Yuxtapuesta de la Articulacion",
+    _clave("12,11", "25,46"): "Angulo Izquierdo de la Educacion",
+    _clave("15,10", "25,46"): "Angulo Derecho del Receptaculo del Amor 2",
+    _clave("15,10", "17,18"): "Cruz Yuxtapuesta de los Extremos",
+    _clave("15,10", "17,18"): "Angulo Izquierdo de la Prevencion",
+    _clave("52,58", "17,18"): "Angulo Derecho del Servicio 2",
+    _clave("52,58", "21,48"): "Cruz Yuxtapuesta de la Quietud",
+    _clave("52,58", "21,48"): "Angulo Izquierdo de las Exigencias",
+    _clave("39,38", "21,48"): "Angulo Derecho de la Tension 2",
+    _clave("39,38", "51,57"): "Cruz Yuxtapuesta de la Provocacion",
+    _clave("39,38", "51,57"): "Angulo Izquierdo del Individualismo",
+    _clave("53,54", "51,57"): "Angulo Derecho de la Penetracion 2",
+    _clave("53,54", "42,32"): "Cruz Yuxtapuesta de los Comienzos",
+    _clave("53,54", "42,32"): "Angulo Izquierdo de los Ciclos",
+    _clave("62,61", "42,32"): "Angulo Derecho del Maya 2",
+    _clave("62,61", "3,50"): "Cruz Yuxtapuesta del Detalle",
+    _clave("62,61", "3,50"): "Angulo Izquierdo del Oscurecimiento",
+    _clave("56,60", "3,50"): "Angulo Derecho de las Leyes 2",
+    _clave("56,60", "27,28"): "Cruz Yuxtapuesta de la Estimulacion",
+    _clave("56,60", "27,28"): "Angulo Izquierdo de la Distraccion",
+    _clave("31,41", "27,28"): "Angulo Derecho de lo Inesperado 2",
+    _clave("31,41", "24,44"): "Cruz Yuxtapuesta de la Influencia",
+    _clave("31,41", "24,44"): "Angulo Izquierdo del Alpha",
+    _clave("33,19", "24,44"): "Angulo Derecho de los Cuatro Caminos 2",
+    _clave("33,19", "2,1"): "Cruz Yuxtapuesta de la Retirada",
+    _clave("33,19", "2,1"): "Angulo Izquierdo del Refinamiento",
+    _clave("7,13", "2,1"): "Angulo Derecho de la Esfinge 3",
+    _clave("7,13", "23,43"): "Cruz Yuxtapuesta de la Interaccion",
+    _clave("7,13", "23,43"): "Angulo Izquierdo de las Mascaras 2",
+    _clave("4,49", "23,43"): "Angulo Derecho de las Explicaciones 3",
+    _clave("4,49", "8,14"): "Cruz Yuxtapuesta de la Formulacion",
+    _clave("4,49", "8,14"): "Angulo Izquierdo de la Revolucion 2",
+    _clave("29,30", "8,14"): "Angulo Derecho del Contagio 3",
+    _clave("29,30", "20,34"): "Cruz Yuxtapuesta de los Compromisos",
+    _clave("29,30", "20,34"): "Angulo Izquierdo de la Industria 2",
+    _clave("59,55", "20,34"): "Angulo Derecho del Fenix Durmiente 3",
+    _clave("59,55", "16,9"): "Cruz Yuxtapuesta de la Estrategia",
+    _clave("59,55", "16,9"): "Angulo Izquierdo del Espiritu 2",
+    _clave("40,37", "16,9"): "Angulo Derecho de la Planificacion 3",
+    _clave("40,37", "35,5"): "Cruz Yuxtapuesta de la Negacion",
+    _clave("40,37", "35,5"): "Angulo Izquierdo de la Migracion 2",
+    _clave("64,63", "35,5"): "Angulo Derecho de la Consciencia 3",
+    _clave("64,63", "45,26"): "Cruz Yuxtapuesta de la Confusion",
+    _clave("64,63", "45,26"): "Angulo Izquierdo del Dominio 2",
+    _clave("47,22", "25,26"): "Angulo Derecho de la Autoridad 3",
+    _clave("47,22", "12,11"): "Cruz Yuxtapuesta de la Opresion",
+    _clave("47,22", "12,11"): "Angulo Izquierdo de Informar 2",
+    _clave("6,36", "12,11"): "Angulo Derecho del Eden 3",
+    _clave("6,36", "15,10"): "Cruz Yuxtapuesta del Conflicto",
+    _clave("6,36", "15,10"): "Angulo Izquierdo del Plano Mundano 2",
+    _clave("46,25", "15,10"): "Angulo Derecho del Receptaculo del Amor 3",
+    _clave("46,25", "52,58"): "Cruz Yuxtapuesta de la Serendipia",
+    _clave("46,25", "52,58"): "Angulo Izquierdo de la Sanacion 2",
+    _clave("18,17", "52,58"): "Angulo Derecho del Servicio 3",
+    _clave("18,17", "39,38"): "Cruz Yuxtapuesta de Correccion",
+    _clave("18,17", "39,38"): "Angulo Izquierdo de la Convulsion 2",
+    _clave("48,21", "39,38"): "Angulo Derecho de la Tension 3",
+    _clave("48,21", "53,54"): "Cruz Yuxtapuesta de la Profundidad",
+    _clave("48,21", "53,54"): "Angulo Izquierdo del Empeno 2",
+    _clave("57,51", "53,54"): "Angulo Derecho de la Penetracion 3",
+    _clave("57,51", "62,61"): "Cruz Yuxtapuesta de la Intuicion",
+    _clave("57,51", "62,61"): "Angulo Izquierdo del Clarion 2",
+    _clave("32,42", "62,61"): "Angulo Derecho del Maya 3",
+    _clave("32,42", "56,60"): "Cruz Yuxtapuesta de la Conservacion",
+    _clave("32,42", "56,60"): "Angulo Izquierdo de la Limitacion 2",
+    _clave("50,3", "56,60"): "Angulo Derecho de las Leyes 3",
+    _clave("50,3", "31,41"): "Cruz Yuxtapuesta de los Valores",
+    _clave("50,3", "31,41"): "Angulo Izquierdo de los Deseos 2",
+    _clave("28,27", "31,41"): "Angulo Derecho de lo Inesperado 3",
+    _clave("28,27", "33,19"): "Cruz Yuxtapuesta de los Riesgos",
+    _clave("28,27", "33,19"): "Angulo Izquierdo del Alineamiento 2",
+    _clave("44,24", "33,19"): "Angulo Derecho de los Cuatro Caminos 3",
+    _clave("44,24", "7,13"): "Cruz Yuxtapuesta de Estar Alerta",
+    _clave("44,24", "7,13"): "Angulo Izquierdo de la Encarnacion 2",
+    _clave("1,2", "7,13"): "Angulo Derecho de la Esfinge 4",
+    _clave("1,2", "4,49"): "Cruz Yuxtapuesta de la Autoexpresion",
+    _clave("1,2", "4,49"): "Angulo Izquierdo del Desafio 2",
+    _clave("43,23", "4,49"): "Angulo Derecho de las Explicaciones 4",
+    _clave("43,23", "29,30"): "Cruz Yuxtapuesta de la Vision Interior",
+    _clave("43,23", "29,30"): "Angulo Izquierdo de la Dedicacion 2",
+    _clave("14,8", "29,30"): "Angulo Derecho del Contagio 4",
+    _clave("14,8", "59,55"): "Cruz Yuxtapuesta de la Potenciacion",
+    _clave("14,8", "59,55"): "Angulo Izquierdo de la Incertidumbre 2",
+    _clave("34,20", "59,55"): "Angulo Derecho del Fenix Durmiente 4",
+    _clave("34,20", "40,37"): "Cruz Yuxtapuesta del Poder",
+    _clave("34,20", "40,37"): "Angulo Izquierdo de la Dualidad 2"                     
+}
+
+
+
+# Función para calcular la cruz de encarnación (simplificada)
+def calcular_cruz(puerta_con, puerta_in):
+    
+    cruces = {
+       {"cruz": "Angulo Derecho de la Esfinge 4", "puertas": "1,2,7,13"},
+       {"cruz": "Angulo Derecho del Receptaculo del Amor 4", "puertas": "1,2,7,13"},
+       {"cruz": "Angulo Derecho de las Leyes 4", "puertas": "2,1,7,13"},
+       {"cruz": "Angulo Derecho del Receptaculo del Amor 2", "puertas": "2,1,7,13"},
+       {"cruz": "Angulo Derecho de la Consciencia 4", "puertas": "5,35,47,22"},
+       {"cruz": "Angulo Derecho del Plano Mundano 2", "puertas": "6,36,47,22"},
+       {"cruz": "Angulo Derecho de la Esfinge 3", "puertas": "7,13,1,2"},
+       {"cruz": "Angulo Derecho del Contagio 2", "puertas": "8,14,1,2"},
+       {"cruz": "Angulo Derecho de la Planificación 4", "puertas": "9,16,40,37"},
+       {"cruz": "Angulo Derecho del Receptaculo del Amor 4", "puertas": "10,15,40,37"},
+       {"cruz": "Angulo Derecho de los Cuatro Caminos 4", "puertas": "11,12,15,46"},
+       {"cruz": "Angulo Derecho del Eden 2", "puertas": "12,11,15,46"},
+       {"cruz": "Angulo Derecho del Servicio 4", "puertas": "13,7,1,2"},
+       {"cruz": "Angulo Derecho de las Explicaciones 3", "puertas": "14,8,1,2"},
+       {"cruz": "Angulo Derecho del Receptaculo del Amor 2", "puertas": "15,10,40,37"},
+       {"cruz": "Angulo Derecho de la Planificación 2", "puertas": "16,9,40,37"},
+       {"cruz": "Angulo Derecho del Servicio", "puertas": "17,18,38,39"},
+       {"cruz": "Angulo Derecho de Ocuparse de lo Echado a Perder", "puertas": "18,17,38,39"},
+       {"cruz": "Angulo Derecho del Acercamiento", "puertas": "19,33,24,44"},
+       {"cruz": "Angulo Derecho del Fenix Durmiente 2", "puertas": "20,34,24,44"},
+       {"cruz": "Angulo Derecho de la Tension", "puertas": "21,48,24,44"},
+       {"cruz": "Angulo Derecho de la Gracia", "puertas": "22,47,24,44"},
+       {"cruz": "Angulo Derecho de las Decisiones 2", "puertas": "23,43,24,44"},
+       {"cruz": "Angulo Derecho de los Cuatro Caminos", "puertas": "24,44,19,33"},
+       {"cruz": "Angulo Derecho del Receptaculo del Amor", "puertas": "25,46,19,33"},
+       {"cruz": "Angulo Derecho de la Autoridad 4", "puertas": "26,45,19,33"},
+       {"cruz": "Angulo Derecho de lo Inesperado", "puertas": "27,28,19,33"},
+       {"cruz": "Angulo Derecho de la Preponderancia de lo Grande", "puertas": "28,27,19,33"},
+       {"cruz": "Angulo Derecho del Contagio 3", "puertas": "29,30,19,33"},
+       {"cruz": "Angulo Derecho de los Sentimientos", "puertas": "30,29,19,33"},
+       {"cruz": "Angulo Derecho de lo Inesperado 2", "puertas": "31,41,19,33"},
+       {"cruz": "Angulo Derecho de Maya 3", "puertas": "32,42,19,33"},
+       {"cruz": "Angulo Derecho de los Cuatro Caminos 2", "puertas": "33,19,24,44"},
+       {"cruz": "Angulo Derecho del Poder de lo Grande", "puertas": "34,20,24,44"},
+       {"cruz": "Angulo Derecho de la Consciencia 2", "puertas": "35,5,24,44"},
+       {"cruz": "Angulo Derecho del Oscurecimiento de la Luz", "puertas": "36,6,24,44"},
+       {"cruz": "Angulo Derecho de la Planificacion", "puertas": "37,40,24,44"},
+       {"cruz": "Angulo Derecho de la Penetracion 4", "puertas": "38,39,24,44"},
+       {"cruz": "Angulo Derecho del Impedimento", "puertas": "39,38,24,44"},
+       {"cruz": "Angulo Derecho de la Planificacion 3", "puertas": "40,37,25,46"},
+       {"cruz": "Angulo Derecho de la Disminucion", "puertas": "41,31,25,46"},
+       {"cruz": "Angulo Derecho del Aumento", "puertas": "42,32,25,46"},
+       {"cruz": "Angulo Derecho de las Explicaciones 4", "puertas": "43,23,25,46"},
+       {"cruz": "Angulo Derecho de los Cuatro Caminos 3", "puertas": "44,24,26,45"},
+       {"cruz": "Angulo Derecho de la Autoridad 2", "puertas": "45,26,26,45"},
+       {"cruz": "Angulo Derecho del Receptaculo del Amor 3", "puertas": "46,25,26,45"},
+       {"cruz": "Angulo Derecho de la Autoridad 3", "puertas": "47,22,26,45"},
+       {"cruz": "Angulo Derecho de la Tension 3", "puertas": "48,21,26,45"},
+       {"cruz": "Angulo Derecho de las Leyes 3", "puertas": "49,4,26,45"},
+       {"cruz": "Angulo Derecho de las Leyes 3", "puertas": "50,3,27,28"},
+       {"cruz": "Angulo Derecho de la Penetracion", "puertas": "51,57,27,28"},
+       {"cruz": "Angulo Derecho del Servicio 2", "puertas": "52,58,27,28"},
+       {"cruz": "Angulo Derecho de la Penetracion 2", "puertas": "53,54,27,28"},
+       {"cruz": "Angulo Derecho de la Muchacha que se Casa", "puertas": "54,53,27,28"},
+       {"cruz": "Angulo Derecho del Espiritu", "puertas": "55,59,27,28"},
+       {"cruz": "Angulo Derecho del Peregrine", "puertas": "56,60,27,28"},
+       {"cruz": "Angulo Derecho de la Penetracion 3", "puertas": "57,51,27,28"},
+       {"cruz": "Angulo Derecho del Servicio 4", "puertas": "58,52,29,30"},
+       {"cruz": "Angulo Derecho de la Dispersion", "puertas": "59,55,29,30"},
+       {"cruz": "Angulo Derecho de la Limitacion", "puertas": "60,56,29,30"},
+       {"cruz": "Angulo Derecho de Maya 4", "puertas": "61,62,29,30"},
+       {"cruz": "Angulo Derecho de Maya 2", "puertas": "62,61,31,41"},
+       {"cruz": "Angulo Derecho de Despues de Concluir", "puertas": "63,64,31,41"},
+       {"cruz": "Angulo Derecho de Antes de Concluir", "puertas": "64,63,31,41"},
+       {"cruz": "Cruz Yuxtapuesta de la Autoexpresion", "puertas": "1,2,7,13"},
+       {"cruz": "Cruz Yuxtapuesta del Chofer", "puertas": "2,1,7,13"},
+       {"cruz": "Cruz Yuxtapuesta de Dificultad Inicial", "puertas": "3,50,7,13"},
+       {"cruz": "Cruz Yuxtapuesta de la Formulacion", "puertas": "4,49,7,13"},
+       {"cruz": "Cruz Yuxtapuesta de los Habitos", "puertas": "5,35,8,14"},
+       {"cruz": "Cruz Yuxtapuesta del Conflicto", "puertas": "6,36,8,14"},
+       {"cruz": "Cruz Yuxtapuesta del Rol", "puertas": "7,13,9,16"},
+       {"cruz": "Cruz Yuxtapuesta de la Contribucion", "puertas": "8,14,9,16"},
+       {"cruz": "Cruz Yuxtapuesta del Foco", "puertas": "9,16,10,15"},
+       {"cruz": "Cruz Yuxtapuesta del Comportamiento", "puertas": "10,15,10,15"},
+       {"cruz": "Cruz Yuxtapuesta de las Ideas", "puertas": "11,12,10,15"},
+       {"cruz": "Cruz Yuxtapuesta de la Educacion", "puertas": "12,11,10,15"},
+       {"cruz": "Cruz Yuxtapuesta de las Opiniones", "puertas": "13,7,17,18"},
+       {"cruz": "Cruz Yuxtapuesta del Poder", "puertas": "14,8,17,18"},
+       {"cruz": "Cruz Yuxtapuesta de los Extremos", "puertas": "15,10,17,18"},
+       {"cruz": "Cruz Yuxtapuesta de la Experimentacion", "puertas": "16,9,17,18"},
+       {"cruz": "Cruz Yuxtapuesta de las Opiniones", "puertas": "17,18,18,17"},
+       {"cruz": "Cruz Yuxtapuesta de Corregir", "puertas": "18,17,18,17"},
+       {"cruz": "Cruz Yuxtapuesta del Querer", "puertas": "19,33,20,34"},
+       {"cruz": "Cruz Yuxtapuesta del Ahora", "puertas": "20,34,21,48"},
+       {"cruz": "Cruz Yuxtapuesta de la Mordedura Tajante", "puertas": "21,48,21,48"},
+       {"cruz": "Cruz Yuxtapuesta de la Gracia", "puertas": "22,47,22,47"},
+       {"cruz": "Cruz Yuxtapuesta de la Asimilacion", "puertas": "23,43,23,43"},
+       {"cruz": "Cruz Yuxtapuesta de la Racionalizacion", "puertas": "24,44,24,44"},
+       {"cruz": "Cruz Yuxtapuesta de la Inocencia", "puertas": "25,46,25,46"},
+       {"cruz": "Cruz Yuxtapuesta del Embajador", "puertas": "26,45,26,45"},
+       {"cruz": "Cruz Yuxtapuesta del Cuidar", "puertas": "27,28,27,28"},
+       {"cruz": "Cruz Yuxtapuesta de los Riesgos", "puertas": "28,27,28,27"},
+       {"cruz": "Cruz Yuxtapuesta del Compromiso", "puertas": "29,30,29,30"},
+       {"cruz": "Cruz Yuxtapuesta de la Conservacion", "puertas": "30,29,30,29"},
+       {"cruz": "Cruz Yuxtapuesta de la Influencia", "puertas": "31,41,31,41"},
+       {"cruz": "Cruz Yuxtapuesta de la Duracion", "puertas": "32,42,32,42"},
+       {"cruz": "Cruz Yuxtapuesta de la Retirada", "puertas": "33,19,33,19"},
+       {"cruz": "Cruz Yuxtapuesta de la Melancolia", "puertas": "34,20,34,20"},
+       {"cruz": "Cruz Yuxtapuesta del Progreso", "puertas": "35,5,35,5"},
+       {"cruz": "Cruz Yuxtapuesta de la Crisis", "puertas": "36,6,36,6"},
+       {"cruz": "Cruz Yuxtapuesta de los Acordes", "puertas": "37,40,37,40"},
+       {"cruz": "Cruz Yuxtapuesta de la Oposicion", "puertas": "38,39,38,39"},
+       {"cruz": "Cruz Yuxtapuesta de los Comienzos", "puertas": "39,38,39,38"},
+       {"cruz": "Cruz Yuxtapuesta de la Negacion", "puertas": "40,37,40,37"},
+       {"cruz": "Cruz Yuxtapuesta de la Disminucion", "puertas": "41,31,41,31"},
+       {"cruz": "Cruz Yuxtapuesta de la Culminacion", "puertas": "42,32,42,32"},
+       {"cruz": "Cruz Yuxtapuesta de la Resolucion", "puertas": "43,23,43,23"},
+       {"cruz": "Cruz Yuxtapuesta de Ir al Encuentro", "puertas": "44,24,44,24"},
+       {"cruz": "Cruz Yuxtapuesta de la Posesion", "puertas": "45,26,45,26"},
+       {"cruz": "Cruz Yuxtapuesta de la Seriondiplia", "puertas": "46,25,46,25"},
+       {"cruz": "Cruz Yuxtapuesta de la Opresion", "puertas": "47,22,47,22"},
+       {"cruz": "Cruz Yuxtapuesta de la Profundidad", "puertas": "48,21,48,21"},
+       {"cruz": "Cruz Yuxtapuesta de los Valores", "puertas": "49,4,49,4"},
+       {"cruz": "Cruz Yuxtapuesta de los Valores", "puertas": "50,3,50,3"},
+       {"cruz": "Cruz Yuxtapuesta del Shock", "puertas": "51,57,51,57"},
+       {"cruz": "Cruz Yuxtapuesta del Shock", "puertas": "52,58,52,58"},
+       {"cruz": "Cruz Yuxtapuesta de los Comienzos", "puertas": "53,54,53,54"},
+       {"cruz": "Cruz Yuxtapuesta de la Ambicion", "puertas": "54,53,54,53"},
+       {"cruz": "Cruz Yuxtapuesta del Espiritu", "puertas": "55,59,55,59"},
+       {"cruz": "Cruz Yuxtapuesta de la Estimulacion", "puertas": "56,60,56,60"},
+       {"cruz": "Cruz Yuxtapuesta de la Intuicion", "puertas": "57,51,57,51"},
+       {"cruz": "Cruz Yuxtapuesta del Vitalidad", "puertas": "58,52,58,52"},
+       {"cruz": "Cruz Yuxtapuesta de la Estrategia", "puertas": "59,55,59,55"},
+       {"cruz": "Cruz Yuxtapuesta de la Limitacion", "puertas": "60,56,60,56"},
+       {"cruz": "Cruz Yuxtapuesta del Pensamiento", "puertas": "61,62,61,62"},
+       {"cruz": "Cruz Yuxtapuesta del Detalle", "puertas": "62,61,62,61"},
+       {"cruz": "Cruz Yuxtapuesta de las Dudas", "puertas": "63,64,63,64"},
+       {"cruz": "Cruz Yuxtapuesta de la Confusion", "puertas": "64,63,64,63"},
+       {"cruz": "Angulo Izquierdo de la Identificacion 2", "puertas": "1,2,7,13"},
+       {"cruz": "Angulo Izquierdo del Desafio 2", "puertas": "2,1,7,13"},
+       {"cruz": "Angulo Izquierdo de los Deseos", "puertas": "3,50,7,13"},
+       {"cruz": "Angulo Izquierdo de la Revolucion 2", "puertas": "4,49,7,13"},
+       {"cruz": "Angulo Izquierdo de la Separacion 2", "puertas": "5,35,8,14"},
+       {"cruz": "Angulo Izquierdo del Plano Mundano 2", "puertas": "6,36,8,14"},
+       {"cruz": "Angulo Izquierdo de las Mascaras 2", "puertas": "7,13,9,16"},
+       {"cruz": "Angulo Izquierdo de la Incertidumbre", "puertas": "8,14,9,16"},
+       {"cruz": "Angulo Izquierdo de la Identificacion 2", "puertas": "9,16,10,15"},
+       {"cruz": "Angulo Izquierdo de la Prevencion 2", "puertas": "10,15,10,15"},
+       {"cruz": "Angulo Izquierdo del Alpha 2", "puertas": "11,12,10,15"},
+       {"cruz": "Angulo Izquierdo de la Educacion 2", "puertas": "12,11,10,15"},
+       {"cruz": "Angulo Izquierdo de la Convulsion", "puertas": "13,7,17,18"},
+       {"cruz": "Angulo Izquierdo de los Desafios 2", "puertas": "14,8,17,18"},
+       {"cruz": "Angulo Izquierdo de las Exigencias 2", "puertas": "15,10,17,18"},
+       {"cruz": "Angulo Izquierdo del Individualismo", "puertas": "16,9,17,18"},
+       {"cruz": "Angulo Izquierdo de la Sanacion", "puertas": "17,18,18,17"},
+       {"cruz": "Angulo Izquierdo de la Convulsion 2", "puertas": "18,17,18,17"},
+       {"cruz": "Angulo Izquierdo del Refinamiento 2", "puertas": "19,33,20,34"},
+       {"cruz": "Angulo Izquierdo de la Incertidumbre 2", "puertas": "20,34,21,48"},
+       {"cruz": "Angulo Izquierdo del Empeno", "puertas": "21,48,21,48"},
+       {"cruz": "Angulo Izquierdo de Informar", "puertas": "22,47,22,47"},
+       {"cruz": "Angulo Izquierdo de la Dedicacion", "puertas": "23,43,23,43"},
+       {"cruz": "Angulo Izquierdo de la Encarnacion 2", "puertas": "24,44,24,44"},
+       {"cruz": "Angulo Izquierdo de la Migracion 2", "puertas": "25,46,25,46"},
+       {"cruz": "Angulo Izquierdo de la Confrontacion 2", "puertas": "26,45,26,45"},
+       {"cruz": "Angulo Izquierdo del Alineamiento", "puertas": "27,28,27,28"},
+       {"cruz": "Angulo Izquierdo del Alineamiento 2", "puertas": "28,27,28,27"},
+       {"cruz": "Angulo Izquierdo de la Industria 2", "puertas": "29,30,29,30"},
+       {"cruz": "Angulo Izquierdo de las Exigencias", "puertas": "30,29,30,29"},
+       {"cruz": "Angulo Izquierdo del Alpha", "puertas": "31,41,31,41"},
+       {"cruz": "Angulo Izquierdo de la Limitacion 2", "puertas": "32,42,32,42"},
+       {"cruz": "Angulo Izquierdo del Refinamiento", "puertas": "33,19,33,19"},
+       {"cruz": "Angulo Izquierdo de la Dualidad 2", "puertas": "34,20,34,20"},
+       {"cruz": "Angulo Izquierdo de la Separacion", "puertas": "35,5,35,5"},
+       {"cruz": "Angulo Izquierdo del Plano Mundano", "puertas": "36,6,36,6"},
+       {"cruz": "Angulo Izquierdo de la Migracion", "puertas": "37,40,37,40"},
+       {"cruz": "Angulo Izquierdo de la Individualismo 2", "puertas": "38,39,38,39"},
+       {"cruz": "Angulo Izquierdo del Individualismo", "puertas": "39,38,39,38"},
+       {"cruz": "Angulo Izquierdo de la Migracion 2", "puertas": "40,37,40,37"},
+       {"cruz": "Angulo Izquierdo de la Separacion 2", "puertas": "41,31,41,31"},
+       {"cruz": "Angulo Izquierdo de la Limitacion", "puertas": "42,32,42,32"},
+       {"cruz": "Angulo Izquierdo de la Dedicacion 2", "puertas": "43,23,43,23"},
+       {"cruz": "Angulo Izquierdo de la Encarnacion", "puertas": "44,24,44,24"},
+       {"cruz": "Angulo Izquierdo de la Confrontacion", "puertas": "45,26,45,26"},
+       {"cruz": "Angulo Izquierdo del Dominio 2", "puertas": "46,25,46,25"},
+       {"cruz": "Angulo Izquierdo de Informar 2", "puertas": "47,22,47,22"},
+       {"cruz": "Angulo Izquierdo del Empeno 2", "puertas": "48,21,48,21"},
+       {"cruz": "Angulo Izquierdo del Desafio", "puertas": "49,4,49,4"},
+       {"cruz": "Angulo Izquierdo de los Deseos 2", "puertas": "50,3,50,3"},
+       {"cruz": "Angulo Izquierdo del Clarion", "puertas": "51,57,51,57"},
+       {"cruz": "Angulo Izquierdo de las Exigencias", "puertas": "52,58,52,58"},
+       {"cruz": "Angulo Izquierdo de los Ciclos", "puertas": "53,54,53,54"},
+       {"cruz": "Angulo Izquierdo de los Ciclos 2", "puertas": "54,53,54,53"},
+       {"cruz": "Angulo Izquierdo del Espiritu 2", "puertas": "55,59,55,59"},
+       {"cruz": "Angulo Izquierdo de la Distraccion 2", "puertas": "56,60,56,60"},
+       {"cruz": "Angulo Izquierdo del Clarion 2", "puertas": "57,51,57,51"},
+       {"cruz": "Angulo Izquierdo de las Exigencias 2", "puertas": "58,52,58,52"},
+       {"cruz": "Angulo Izquierdo de la Dispersion", "puertas": "59,55,59,55"},
+       {"cruz": "Angulo Izquierdo del Obscurecimiento", "puertas": "60,56,60,56"},
+       {"cruz": "Angulo Izquierdo del Oscurecimiento 2", "puertas": "61,62,61,62"},
+       {"cruz": "Angulo Izquierdo de la Preponderancia de lo Pequeño", "puertas": "62,61,62,61"},
+       {"cruz": "Angulo Izquierdo del Dominio", "puertas": "63,64,63,64"},
+       {"cruz": "Angulo Izquierdo del Dominio 2", "puertas": "64,63,64,63"}
+}
+
+    clave = _clave(puerta_con, puerta_in)
+    return CRUCES.get(clave, "Cruz desconocida")
+'''
+   
+
 
 
 @app.route('/calcular')
@@ -945,7 +1795,7 @@ def api_calcular_kinmaya():
 
         fila = res.data[0]
 
-        # Parseo de datos karina latino
+        # Parseo de datos
         anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
         #hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
         
@@ -972,7 +1822,7 @@ def api_cumple_kin():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+    
 @app.route('/guardar', methods=['POST'])
 def guardar_datos():
     configurar_swisseph()
@@ -1009,7 +1859,7 @@ def guardar_datos():
         lon = float(fila['lon'])
         '''
             # Ahora sí: llamás a las funciones de los planetas
-        sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon)
+        sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
         luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
         mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
         venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
@@ -1141,7 +1991,26 @@ def guardar_datos():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-    
+@app.route('/procesa_datos', methods=['POST'])
+def api_procesa_datos():
+    configurar_swisseph()
+    try:
+        data = request.get_json()
+        anio = int(data["anio"])
+        mes = int(data["mes"])
+        dia = int(data["dia"])
+        hora = int(data["hora"])
+        minuto = int(data["minuto"])
+        lat = float(data["lat"])
+        lon = float(data["lon"])
+        modo = request.args.get("modo", "json")
+        resultado = procesar(anio, mes, dia, hora, minuto, lat, lon)
+        if modo == "string":
+            return resultado
+        else:
+            return jsonify(resultado)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500    
 
 @app.route('/')
 def home():
@@ -1150,5 +2019,5 @@ def home():
 
 if __name__ == '__main__':
     configurar_swisseph()
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
