@@ -945,7 +945,7 @@ def api_calcular_kinmaya():
 
         fila = res.data[0]
 
-        # Parseo de datos
+        # Parseo de datos karina latino
         anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
         #hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
         
