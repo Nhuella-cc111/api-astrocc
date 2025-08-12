@@ -1146,9 +1146,9 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         
     }
     #if request.args.get("modo") == "string":
-    return "-".join(str(v) for v in registro.values())
+    #return "-".join(str(v) for v in registro.values())
    # else:
-    #    return registro
+    return registro
     #return registro
 
 
