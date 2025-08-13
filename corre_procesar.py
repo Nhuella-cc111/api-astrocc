@@ -20,15 +20,21 @@ url = "http://localhost:5000/procesa_datos"
 
 data = {
     #"nh": "23",
-    "anio":2013,
-    "mes": 9,
+    "anio":2010,
+    "mes": 2,
     "dia": 17,
-    "hora": 15,
-    "minuto": 4,
+    "hora": 9,
+    "minuto": 50,
     #"fecha_nac" : "1973-04-28",
     #"hora_nac": "15:30",
     "lat": -45.8632024,
     "lon": -67.4752615
+    #"lat": 37.1734995,  # Granada
+    #"lon": -3.5995337
+    
+    #"lat": 42.507,      #Andorra
+    #"lon": 1.521,
+    
 }
 
 response = requests.post(url, json=data)
