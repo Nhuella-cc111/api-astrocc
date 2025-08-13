@@ -1207,7 +1207,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
     nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
     fase = obtener_fase_lunar(sol["grados"], luna["grados"])
-    tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
+    #tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
     mc = obtener_mc(anio, mes, dia, hora, minuto, lat, lon)
 
     #print(f" sol {sol['grados']} luna {luna['grados']} tierra {tierra['grados']}")
@@ -1248,6 +1248,200 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     }
     #print("planetas en signos", planetas_en_signos)
     #print("planetas en signos 12", planetas_en_signos12)
+    ''''
+    anio_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["anio_i"]
+    mes_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["mes_i"]
+    dia_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["dia_i"]
+    hora_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["hora_i"]
+    min_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["minuto_i"]
+    
+    grados_in =88.3
+    #grados_inlun = 88*12.92
+
+    
+    sol_inconsciente =      (sol["grados"]-grados_in)%360
+    #print(f"grado sol inconsciente {sol_inconsciente}")
+    tierra_inconsciente =   (tierra["grados"]-grados_in)%360
+    '''
+    #fecha_natal = datetime(anio, mes, dia, hora, minuto)
+    #deltain = timedelta(days=88, hours=7, minutes=12, seconds=50) # 0.3 días ≈ 7h12m
+    #fecha_inco= fecha_natal - deltain
+    #fecha_inco = fecha_inco.replace(hour=0, minute=0, second=0, microsecond=0)
+    '''
+    luna_in = obtener_luna(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)
+    #print(f"grado luna inconsciente {luna_in['grados']}")
+    luna_inconsciente =     luna_in["grados"]
+    #luna_inconsciente =     (luna["grados"]-grados_inlun)%360
+        
+    nodon_inconsciente =    obtener_nodoN(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    nodos_inconsciente =    obtener_nodo_sur(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    mercurio_inconsciente = obtener_mercurio(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    venus_inconsciente =    obtener_venus(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    marte_inconsciente =    obtener_marte(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    jupiter_inconsciente =  obtener_jupiter(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    saturno_inconsciente =  obtener_saturno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    urano_inconsciente =    obtener_urano(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    neptuno_inconsciente =  obtener_neptuno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    pluton_inconsciente =   obtener_pluton(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    
+    
+    #grado_sol_inconsciente = sol["grados"]- grados_in
+    # Obtener puertas activadas por los planetas
+    puertas_activadas = []
+    
+    for planetas in (
+        [sol, tierra, luna, nodoN, nodoS, mercurio, venus, marte, jupiter, saturno, urano, neptuno, pluton,
+                     ]):
+        tolerancia = 0
+        puerta_dict = obtener_puerta(planetas["grados"], tolerancia)
+        puerta = puerta_dict["puerta"] if puerta_dict else None
+        #print(f"puerta activa : {puerta}")
+        if puerta:
+            puertas_activadas.append(puerta)
+            
+            #if nombre == "sol":
+            #    puertasol_con = puerta_dict["puerta"] 
+            #if nombre == "tierra":
+            #    puertatierra_con = puerta_dict["puerta"] 
+            
+        
+    for nombre, grado_inconsciente in zip(["sol_inconsciente","tierra_inconsciente", "luna_inconsciente", "nodon_inconsciente", "nodoS_inconsciente", "mercurio_inconsciente", 
+         "venus_inconsciente", "marte_inconsciente", "jupiter_inconsciente", "saturno_inconsciente", "urano_inconsciente", 
+         "neptuno_inconsciente", "pluton_inconsciente"],
+        [sol_inconsciente, tierra_inconsciente, luna_inconsciente, nodon_inconsciente, nodos_inconsciente,
+                     mercurio_inconsciente, venus_inconsciente, marte_inconsciente, jupiter_inconsciente, saturno_inconsciente,
+                     urano_inconsciente, neptuno_inconsciente, pluton_inconsciente]):
+        # Para los planetas inconscientes,
+        tolerancia = 0
+        puerta_dict = obtener_puerta(grado_inconsciente, tolerancia)
+        puerta = puerta_dict["puerta"] if puerta_dict else None
+        #print(f"puerta activa :{nombre} : {puerta}")
+        if puerta:
+            puertas_activadas.append(puerta)
+            
+            #if nombre == "sol_inconsciente":
+            #    puertasol_in = puerta_dict["puerta"] 
+            #if nombre == "tierra_inconsciente":    
+            #    puertatierra_in = puerta_dict["puerta"]
+                 
+
+    # Detectar canales activos
+    canales_activos = detectar_canales(puertas_activadas)
+    #print(f"canales activos: {canales_activos}")
+    # Calcular tipo
+    tipo = calcular_tipo(canales_activos)
+    #print(f"tipo dh {tipo}")
+    
+    perfil = calcular_perfil( sol["grados"], sol_inconsciente)
+    #print(f"perfil dh {perfil}")
+    #print(f"grado_sol_iconsciente dh {sol_inconsciente}")
+    #print(f"grado_sol_consciente dh {sol["grados"]}")
+    #tipo = calcular_tipo(canales_activos)
+    #puerta_con =puertasol_con&","& puertatierra_con
+    #puerta_in = puertasol_in&","& puertatierra_in
+    #cruz = calcular_cruz(puerta_con, puerta_in)
+
+    #print(f"Perfil: {perfil}")
+    #print(f"Tipo: {tipo}")
+    #print(f"Cruz de encarnación: {cruz}")
+    '''
+    registro = {
+        "fecha_nac": date(anio, mes, dia),
+        "hora": hora,
+        "minuto": minuto,
+        "lat": lat,
+        "lon": lon,
+        "sol": sol["signo"],
+        "luna": luna["signo"],
+        "mercurio": mercurio["signo"],
+        "venus": venus["signo"],
+        "marte": marte["signo"],
+        "jupiter": jupiter["signo"],
+        "saturno": saturno["signo"],
+        "urano": urano["signo"],
+        "neptuno": neptuno["signo"],
+        "pluton": pluton["signo"],
+        "quiron": quiron["signo"],
+        "lilith": lilith["signo"],
+        "luna_nac": fase,
+        "gr_sol": sol["grado_en_signo"],
+        "c_sol": sol["casa"],
+        "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
+        "gr_asc": ascendente["grado_en_signo"],
+        "gr_luna": luna["grado_en_signo"],
+        "c_luna": luna["casa"],
+        "gr_merc": mercurio["grado_en_signo"],
+        "c_merc":  mercurio["casa"],
+        "gr_venus": venus["grado_en_signo"],
+        "c_venus": venus["casa"],
+        "gr_marte": marte["grado_en_signo"],
+        "c_marte": marte["casa"],
+        "gr_jupiter": jupiter["grado_en_signo"],
+        "c_jupiter": jupiter["casa"],
+        "gr_satur": saturno["grado_en_signo"],
+        "c_satur": saturno["casa"],
+        "gr_urano": urano["grado_en_signo"],
+        "c_urano": urano["casa"],
+        "gr_neptu": neptuno["grado_en_signo"],
+        "c_neptu": neptuno["casa"],
+        "gr_pluto": pluton["grado_en_signo"],
+        "c_pluto": pluton["casa"],
+        "nodon": nodoN["signo"],
+        "gr_nodon": nodoN["grado_en_signo"],
+        "c_nodon": nodoN["casa"],
+        "nodoS": nodoS["signo"],
+        "gr_nodos":nodoS["grado_en_signo"],
+        "c_nodoS": nodoS["casa"],
+        "gr_lilith": lilith["grado_en_signo"],
+        "c_lilith":  lilith["casa"],
+        "gr_quiron": quiron["grado_en_signo"],
+        "c_quiron":  quiron["casa"],
+        "elemento": obtener_elemento(planetas_en_signos12),
+        "polaridad": polaridad_ponderada_12(planetas_en_signos12),
+        "modalidad": obtener_modalidad(planetas_en_signos),
+        "n_destino": calcular_numero_destino(dia, mes, anio),
+        "fr_144": calcular_fractal(sol["signo"], ascendente["signo"]),
+        "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
+        "rayo": dia_y_rayo(dia, mes, anio)["color"]        
+        
+        
+    }
+    #if request.args.get("modo") == "string":
+    #return "-".join(str(v) for v in registro.values())
+   # else:
+    return registro
+    #return registro
+
+
+def procesar_dh(anio, mes, dia, hora, minuto, lat, lon):
+
+    '''
+    Calcula datos de DH
+    Las puertas se obtienen a partir de los grados zodiacales de los planetas usando una tabla de mapeo.
+   '''
+
+    
+
+    # Ahora sí: llamás a las funciones de los planetas
+    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
+    luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
+    mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
+    venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
+    marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon)
+    jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon)
+    saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon)
+    urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon)
+    neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon)
+    pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
+
+    ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
+    nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
+    nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
+    
+    tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
+   
+
+    
     anio_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["anio_i"]
     mes_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["mes_i"]
     dia_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["dia_i"]
@@ -1349,69 +1543,13 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "minuto": minuto,
         "lat": lat,
         "lon": lon,
-        "sol": sol["signo"],
-        "luna": luna["signo"],
-        "mercurio": mercurio["signo"],
-        "venus": venus["signo"],
-        "marte": marte["signo"],
-        "jupiter": jupiter["signo"],
-        "saturno": saturno["signo"],
-        "urano": urano["signo"],
-        "neptuno": neptuno["signo"],
-        "pluton": pluton["signo"],
-        "quiron": quiron["signo"],
-        "lilith": lilith["signo"],
-        "luna_nac": fase,
-        "gr_sol": sol["grado_en_signo"],
-        "c_sol": sol["casa"],
-        "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
-        "gr_asc": ascendente["grado_en_signo"],
-        "gr_luna": luna["grado_en_signo"],
-        "c_luna": luna["casa"],
-        "gr_merc": mercurio["grado_en_signo"],
-        "c_merc":  mercurio["casa"],
-        "gr_venus": venus["grado_en_signo"],
-        "c_venus": venus["casa"],
-        "gr_marte": marte["grado_en_signo"],
-        "c_marte": marte["casa"],
-        "gr_jupiter": jupiter["grado_en_signo"],
-        "c_jupiter": jupiter["casa"],
-        "gr_satur": saturno["grado_en_signo"],
-        "c_satur": saturno["casa"],
-        "gr_urano": urano["grado_en_signo"],
-        "c_urano": urano["casa"],
-        "gr_neptu": neptuno["grado_en_signo"],
-        "c_neptu": neptuno["casa"],
-        "gr_pluto": pluton["grado_en_signo"],
-        "c_pluto": pluton["casa"],
-        "nodon": nodoN["signo"],
-        "gr_nodon": nodoN["grado_en_signo"],
-        "c_nodon": nodoN["casa"],
-        "nodoS": nodoS["signo"],
-        "gr_nodos":nodoS["grado_en_signo"],
-        "c_nodoS": nodoS["casa"],
-        "gr_lilith": lilith["grado_en_signo"],
-        "c_lilith":  lilith["casa"],
-        "gr_quiron": quiron["grado_en_signo"],
-        "c_quiron":  quiron["casa"],
-        "elemento": obtener_elemento(planetas_en_signos12),
-        "polaridad": polaridad_ponderada_12(planetas_en_signos12),
-        "modalidad": obtener_modalidad(planetas_en_signos),
-        "n_destino": calcular_numero_destino(dia, mes, anio),
-        "fr_144": calcular_fractal(sol["signo"], ascendente["signo"]),
-        "dia_llegada": dia_y_rayo(dia, mes, anio)["dia"],
-        "rayo": dia_y_rayo(dia, mes, anio)["color"],
         "tipo_dh": tipo,
         "perfil": perfil
-        
-        
-        
+    
     }
-    #if request.args.get("modo") == "string":
-    #return "-".join(str(v) for v in registro.values())
-   # else:
+  
     return registro
-    #return registro
+   
 
 
 
@@ -2044,6 +2182,37 @@ def calcular():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/calcular_dh')
+def calcular_dh():
+    configurar_swisseph()
+    nh = request.args.get('nh')
+    if not nh:
+        return jsonify({"error": "Falta parámetro nh"}), 400
+
+    try:
+        res = supabase.table("rtas_form").select("*").eq("nh", nh).execute()
+        if not res.data:
+            return jsonify({"error": f"No se encontró nh={nh}"}), 404
+
+        fila = res.data[0]
+
+        # Parseo de datos
+        anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
+        hora_str, minuto_str, *_ = fila['hora_nac'].split(':')
+        hora = int(hora_str)
+        minuto = int(minuto_str)
+        lat = float(fila['lat'])
+        lon = float(fila['lon'])
+
+        # Llamar a función principal
+        resultado = procesar_dh(anio, mes, dia, hora, minuto, lat, lon)
+
+        return jsonify(resultado)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
 @app.route('/calcular_kinmaya')
 def api_calcular_kinmaya():
     nh = request.args.get('nh')
@@ -2283,7 +2452,7 @@ def api_procesa_datos():
         lat = float(data["lat"])
         lon = float(data["lon"])
         modo = request.args.get("modo", "json")
-        resultado = procesar(anio, mes, dia, hora, minuto, lat, lon)
+        resultado = procesar_dh(anio, mes, dia, hora, minuto, lat, lon)
         if modo == "string":
             return resultado
         else:
