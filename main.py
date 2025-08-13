@@ -28,11 +28,11 @@ app = Flask(__name__)
 
 
 
-SUPABASE_URL = "https://amjskrqaoiuabscecmji.supabase.co"
+#SUPABASE_URL = "https://amjskrqaoiuabscecmji.supabase.co"
 #SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtanNrcnFhb2l1YWJzY2VjbWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5Nzg3NDksImV4cCI6MjA2NjU1NDc0OX0.t_9h25ehDGBWGz39YmMPdeeaFyWpQcoDR0POt5Y3CXQ"
-SUPABASE_KEY = "sb_secret_PQ9R_OaevJPdpIHr-voFOg_avwtWZdK"
-url = os.environ["SUPABASE_URL"]
-key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]   # service_role
+#SUPABASE_KEY = "sb_secret_PQ9R_OaevJPdpIHr-voFOg_avwtWZdK"
+url = os.environ["https://amjskrqaoiuabscecmji.supabase.co"]
+key = os.environ["sb_secret_PQ9R_OaevJPdpIHr-voFOg_avwtWZdK"]   # service_role
 supabase = create_client(url, key)
 
 #supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
