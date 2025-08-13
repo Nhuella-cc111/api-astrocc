@@ -1,3 +1,5 @@
+from timezonefinder import TimezoneFinder
+TF = TimezoneFinder(in_memory=True)  # evita leer desde disco en cada request
 from flask import Flask, request, jsonify
 from supabase import create_client, Client
 import swisseph as swe
@@ -7,7 +9,6 @@ from datetime import datetime, timedelta
 import pytz
 import os
 import math
-from timezonefinder import TimezoneFinder
 from zoneinfo import ZoneInfo
 
 
@@ -194,6 +195,13 @@ def calcular_casa(jd, lat, lon, grado_planeta):
                 break
     return casa
 '''
+
+def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
+    tzname = TF.timezone_at(lat=float(lat), lng=float(lon)) \
+             or TF.closest_timezone_at(lat=float(lat), lng=float(lon))
+    dt_local = datetime(anio, mes, dia, hora, minuto, tzinfo=ZoneInfo(tzname))
+    return dt_local.astimezone(ZoneInfo("UTC")), tzname
+'''
 def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
     tzname = TimezoneFinder().timezone_at(lat=lat, lng=lon) or \
              TimezoneFinder().closest_timezone_at(lat=lat, lng=lon)
@@ -201,7 +209,7 @@ def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
     dt_local = datetime(anio, mes, dia, hora, minuto, tzinfo=ZoneInfo(tzname))
     #print(f"Fecha y hora local: {dt_local}")
     return dt_local.astimezone(ZoneInfo("UTC")), tzname
-
+'''
 
 def jd_ut(anio, mes, dia, hora, minuto, lat, lon):
     dt_utc, tzname = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)

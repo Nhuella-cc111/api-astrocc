@@ -4,4 +4,5 @@ requests
 supabase
 gunicorn
 pytz
-timezonefinder
+timezonefinder==8.0.0
+tzdata
