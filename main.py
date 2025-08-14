@@ -2294,45 +2294,50 @@ def api_cumple_kin():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+from flask import request, jsonify
+
     
 @app.route('/guardar', methods=['POST'])
 def guardar_datos():
     
     
-
     configurar_swisseph()
     #print("Ruta actual del proceso:", os.getcwd())
     #print("Archivos disponibles en sweph/ephe:", os.listdir("sweph/ephe"))
    
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         nh = data.get("nh")
-        tipo_dh = data.get("tipo_dh")
-        perfil = data.get("perfil")
-        fecha_nac = data.get("fecha_nac")  
-        hora_nac = data.get("hora_nac")    
-        lat = data.get("lat")
-        lon = data.get("lon")
-        anio, mes, dia = map(int, fecha_nac.split('-'))
-        hora, minuto = map(int, hora_nac.split(':'))
+        perfil = str(data.get("perfil") or "").strip()
+        tipo_dh = str(data.get("tipo_dh") or "").strip()
+
+        fecha_nac = (data.get("fecha_nac") or "").strip()         # YYYY-MM-DD
+        anio, mes, dia = map(int, fecha_nac.split("-"))
+
+        hora_nac = (data.get("hora_nac") or "").strip()           # HH:MM o HH:MM:SS
+        hh, mm = hora_nac.split(":")[0:2]                          # robusto a segundos
+        hora, minuto = int(hh), int(mm)
+
+        lat = float(data.get("lat")) if data.get("lat") not in (None, "") else None
+        lon = float(data.get("lon")) if data.get("lon") not in (None, "") else None
+
+        #data = request.get_json()
+        #nh = data.get("nh")
+        #tipo_dh = data.get("tipo_dh")
+        #perfil = data.get("perfil")
+        #fecha_nac = data.get("fecha_nac")  
+        #hora_nac = data.get("hora_nac")    
+        #lat = data.get("lat")
+        #lon = data.get("lon")
+        #anio, mes, dia = map(int, fecha_nac.split('-'))
+        #hora, minuto = map(int, hora_nac.split(':'))
 
 
 
         if not nh or not tipo_dh or not perfil or not fecha_nac or not hora_nac :
             return jsonify({"error": "Faltan datos obligatorios"}), 400
-        '''
-        # 1. Buscar datos personales en rtas_form
-        res = supabase.table("rtas_form").select("*").eq("nh", nh).execute()
-        if not res.data:
-            return jsonify({"error": f"No se encontró nh={nh}"}), 404
-
-        fila = res.data[0]
-        # Extraer fecha, hora, lat, lon
-        anio, mes, dia = map(int, fila['fecha_nac'].split('-'))
-        hora, minuto = map(int, fila['hora_nac'].split(':'))
-        lat = float(fila['lat'])
-        lon = float(fila['lon'])
-        '''
+        
             # Ahora sí: llamás a las funciones de los planetas
         sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
         luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
