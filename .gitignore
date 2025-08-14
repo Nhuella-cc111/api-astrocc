@@ -1,32 +1,24 @@
-# Entorno virtual de Python
-venv/
-env/
+# Ignorar todo por defecto
+/*
 
-# Archivos de configuración sensibles
-.env
-*.pem
 
-# Archivos de datos o caché
-*.csv
-cache_geocoding.csv
+# Mantener el propio .gitignore
+!/.gitignore
 
-# Archivos de imágenes y gráficos generados
-*.png
-*.jpg
-*.jpeg
+# Mantener documentación y requisitos
+!/README.md
+!/requirements.txt
 
-# Carpeta de versiones locales
-Versiones/
+# Mantener el/los entrypoints de la app
+!/main.py
+# (si tu archivo se llama distinto, agrega su ruta, ej:)
+# !/api.py
 
-# Archivos temporales del sistema
-.DS_Store
-Thumbs.db
+# Mantener efemérides de Swiss Ephemeris
+!/sweph/ephe/
+!/sweph/ephe/**
 
-# Archivos compilados de Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# (OPCIONAL) si tenés una carpeta config con mínimos archivos:
+# !/config/
+# !/config/**
 
-# Configuración local de VSCode
-.vscode/
