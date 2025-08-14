@@ -10,7 +10,8 @@ import pytz
 import os
 import math
 from zoneinfo import ZoneInfo
-
+from pathlib import Path
+from dotenv import load_dotenv
 
 
 def configurar_swisseph():
@@ -23,16 +24,17 @@ def configurar_swisseph():
 app = Flask(__name__)
 
 
-
-
-
-
+# Carga .env junto a este archivo, sin depender de desde dónde ejecutes
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 #SUPABASE_URL = "https://amjskrqaoiuabscecmji.supabase.co"
 #SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtanNrcnFhb2l1YWJzY2VjbWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5Nzg3NDksImV4cCI6MjA2NjU1NDc0OX0.t_9h25ehDGBWGz39YmMPdeeaFyWpQcoDR0POt5Y3CXQ"
 #SUPABASE_KEY = "sb_secret_PQ9R_OaevJPdpIHr-voFOg_avwtWZdK"
-url = os.environ["https://amjskrqaoiuabscecmji.supabase.co"]
-key = os.environ["sb_secret_PQ9R_OaevJPdpIHr-voFOg_avwtWZdK"]   # service_role
+url = os.environ["SUPABASE_URL"]
+key = os.environ["SUPABASE_KEY"]   # service_role
+if not url or not key:
+    raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en variables de entorno")
+
 supabase = create_client(url, key)
 
 #supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
