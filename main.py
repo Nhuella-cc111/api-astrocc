@@ -1,17 +1,30 @@
 from timezonefinder import TimezoneFinder
 TF = TimezoneFinder(in_memory=True)  # evita leer desde disco en cada request
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from supabase import create_client, Client
 import swisseph as swe
 import requests
 from datetime import date
 from datetime import datetime, timedelta
 import pytz
-import os
+import os, hmac
 import math
 from zoneinfo import ZoneInfo
 from pathlib import Path
 from dotenv import load_dotenv
+
+
+
+API_SECRET = os.environ.get("API_SHARED_SECRET")
+
+def require_api_key():
+    # Comparación en tiempo constante
+    provided = request.headers.get("X-API-KEY", "")
+    if not API_SECRET or not hmac.compare_digest(provided, API_SECRET):
+        abort(401)  # Unauthorized
+
+
+
 
 
 def configurar_swisseph():
@@ -1066,6 +1079,7 @@ def dia_y_rayo(dia, mes, anio):
 
 
 def calcular_kin_onda(anio, mes, dia):
+    
     valores_anio = {
     2065:164, 2064: 59, 2063:214, 2062:109, 2061:  4, 2060:159, 2059: 54, 2058:209, 2057:104, 2056:259, 2055:154,
     2054: 49, 2053:204, 2052: 99, 2051:254, 2050:149, 2049: 44, 2048:199, 2047: 94, 2046:249, 2045:144, 2044: 39,
@@ -1206,7 +1220,6 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
 
     Las puertas se obtienen a partir de los grados zodiacales de los planetas usando una tabla de mapeo.
     """
-
     
 
     # Ahora sí: llamás a las funciones de los planetas
@@ -1438,7 +1451,7 @@ def procesar_dh(anio, mes, dia, hora, minuto, lat, lon):
     Calcula datos de DH
     Las puertas se obtienen a partir de los grados zodiacales de los planetas usando una tabla de mapeo.
    '''
-
+    
     
 
     # Ahora sí: llamás a las funciones de los planetas
@@ -2169,10 +2182,17 @@ def calcular_cruz(puerta_con, puerta_in):
 '''
    
 
+@app.before_request
+def guard():
+    # Rutas que SÍ requieren API key
+    protected = ("/guardar", "/calcular", "/calcular_dh", "/calcular_kinmaya")
+    if request.path.startswith(protected):
+        require_api_key()
 
 
 @app.route('/calcular')
 def calcular():
+    
     configurar_swisseph()
     nh = request.args.get('nh')
     if not nh:
@@ -2203,6 +2223,7 @@ def calcular():
 
 @app.route('/calcular_dh')
 def calcular_dh():
+    
     configurar_swisseph()
     nh = request.args.get('nh')
     if not nh:
@@ -2234,6 +2255,7 @@ def calcular_dh():
 
 @app.route('/calcular_kinmaya')
 def api_calcular_kinmaya():
+    
     nh = request.args.get('nh')
     if not nh:
         return jsonify({"error": "Falta parámetro nh"}), 400
@@ -2275,6 +2297,9 @@ def api_cumple_kin():
     
 @app.route('/guardar', methods=['POST'])
 def guardar_datos():
+    
+    
+
     configurar_swisseph()
     #print("Ruta actual del proceso:", os.getcwd())
     #print("Archivos disponibles en sweph/ephe:", os.listdir("sweph/ephe"))
@@ -2460,6 +2485,8 @@ def guardar_datos():
     
 @app.route('/procesa_datos', methods=['POST'])
 def api_procesa_datos():
+   
+   
     configurar_swisseph()
     try:
         data = request.get_json()
