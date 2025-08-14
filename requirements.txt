@@ -6,3 +6,4 @@ gunicorn
 pytz
 timezonefinder==8.0.0
 tzdata
+python-dotenv
