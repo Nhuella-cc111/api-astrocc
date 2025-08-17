@@ -2471,7 +2471,7 @@ def guardar_datos():
         nh = data.get("nh")
         perfil = str(data.get("perfil") or "").strip()
         tipo_dh = str(data.get("tipo_dh") or "").strip()
-        id_cruz = str(data.get("id_cruz") or "").strip()
+        id_cruz = data.get("id_cruz")
 
         fecha_nac = (data.get("fecha_nac") or "").strip()         # YYYY-MM-DD
         anio, mes, dia = map(int, fecha_nac.split("-"))
@@ -2503,7 +2503,7 @@ def guardar_datos():
             # Ahora sí: llamás a las funciones de los planetas
         sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False, country_hint)
         luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon, country_hint)
-        mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, country_hint)
+        mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon, country_hint)
         venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon, country_hint)
         marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon, country_hint)
         jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon, country_hint)
