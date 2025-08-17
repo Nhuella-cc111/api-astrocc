@@ -235,9 +235,127 @@ def obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon):
     return dt_local.astimezone(ZoneInfo("UTC")), tzname
 '''
 
+
+
+'''
+TF = TimezoneFinder(in_memory=True)
+
+def jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, override_offset_hours=None):
+    # 1) tz IANA por coordenadas
+    tzname = TF.timezone_at(lat=float(lat), lng=float(lon)) \
+             or TF.closest_timezone_at(lat=float(lat), lng=float(lon)) \
+             or "UTC"
+    dt_local = datetime(anio, mes, dia, hora, minuto, tzinfo=ZoneInfo(tzname))
+
+    # 2) Modo override explícito (solo para debug/manual)
+    if override_offset_hours is not None:
+        dt_utc = datetime(anio, mes, dia, hora, minuto) - timedelta(hours=float(override_offset_hours))
+        mode = f"override_{override_offset_hours:+.1f}h"
+    else:
+        # 3) Cálculo normal con zoneinfo
+        dt_utc_zoneinfo = dt_local.astimezone(ZoneInfo("UTC"))
+        off_hours = dt_local.utcoffset().total_seconds() / 3600.0
+        mode = f"zoneinfo({off_hours:+.1f}h)"
+
+        # 4) Parche Argentina: si devuelve -2h entre OCT–MAR, forzamos -3h
+        if tzname.startswith("America/Argentina/"):
+            if off_hours > -3.0 and mes in (10, 11, 12, 1, 2, 3):
+                dt_utc = datetime(anio, mes, dia, hora, minuto) - timedelta(hours=3)
+                mode = f"AR_patch_-3_from_{off_hours:+.1f}h"
+            else:
+                dt_utc = dt_utc_zoneinfo
+        else:
+            dt_utc = dt_utc_zoneinfo
+
+    h = dt_utc.hour + dt_utc.minute/60 + dt_utc.second/3600
+    jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
+    return jd, tzname, dt_utc, mode
+'''
+
+
+TF = TimezoneFinder(in_memory=True)
+
+AR_TZS = ("America/Argentina/",)  # prefijo
+CL_TZS = ("America/Santiago", "America/Punta_Arenas", "Pacific/Easter")
+UY_TZS = ("America/Montevideo",)
+
+def _canon_pais(p):
+    p = (p or "").strip().lower()
+    if p in ("argentina","ar"): return "AR"
+    if p in ("chile","cl"):     return "CL"
+    if p in ("uruguay","uy"):   return "UY"
+    if p in ("brasil","brazil","br"): return "BR"
+    return None
+
+def _es_argentina(lat, lon):
+    # bbox amplia y barata
+    return (-55.2 <= lat <= -21.8) and (-74.1 <= lon <= -53.5)
+
+def _es_magallanes(lat, lon):
+    # muy aproximado para preferir America/Punta_Arenas
+    return (-54.0 <= lat <= -48.0) and (-76.0 <= lon <= -66.0)
+
+def _es_isla_de_pascua(lat, lon):
+    return (-28.5 <= lat <= -26.0) and (-111.0 <= lon <= -108.0)
+
+def _tz_desde_coords(lat, lon, country_hint=None):
+    tz = TF.timezone_at(lat=float(lat), lng=float(lon)) \
+         or TF.closest_timezone_at(lat=float(lat), lng=float(lon))
+    ch = _canon_pais(country_hint)
+    #print(f"TZ desde coords: {lat}, {lon} → {tz} (hint: {ch})")
+
+    # Si el usuario dijo un país, priorizamos ese país SOLO si las coords encajan
+    if ch == "AR" and _es_argentina(lat, lon) and not (tz and tz.startswith(AR_TZS)):
+        tz = "America/Argentina/Buenos_Aires"
+    elif ch == "CL":
+        if _es_isla_de_pascua(lat, lon):
+            tz = "Pacific/Easter"
+        elif _es_magallanes(lat, lon):
+            tz = "America/Punta_Arenas"
+        else:
+            tz = "America/Santiago"
+    elif ch == "UY":
+        tz = "America/Montevideo"
+    # Para BR u otros, no forzamos nada: confiamos en TF.
+
+    return tz or "UTC"
+
+def jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, override_offset_hours=None):
+    tzname = _tz_desde_coords(lat, lon, country_hint)
+    #print(f"ASC Zona horaria detectada: {tzname}")
+    dt_local = datetime(anio, mes, dia, hora, minuto, tzinfo=ZoneInfo(tzname))
+
+    if override_offset_hours is not None:
+        dt_utc = datetime(anio, mes, dia, hora, minuto) - timedelta(hours=float(override_offset_hours))
+        mode = f"override_{override_offset_hours:+.1f}h"
+    else:
+        dt_utc_zoneinfo = dt_local.astimezone(ZoneInfo("UTC"))
+        off_hours = dt_local.utcoffset().total_seconds() / 3600.0
+        mode = f"zoneinfo({off_hours:+.1f}h)"
+
+        # Parche SOLO para Argentina (nunca Chile/Uruguay/Brasil)
+        if tzname.startswith("America/Argentina") and mes in (10,11,12,1,2,3) and off_hours > -3.0:
+            dt_utc = datetime(anio, mes, dia, hora, minuto) - timedelta(hours=3)
+            mode = f"AR_patch_-3_from_{off_hours:+.1f}h"
+        else:
+            dt_utc = dt_utc_zoneinfo
+
+    h = dt_utc.hour + dt_utc.minute/60 + dt_utc.second/3600
+    jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
+    return jd, tzname, dt_utc, mode
+
+
+def _asc_from_dt_utc(dt_utc, lat, lon):
+    """Calcula ASC (0–360) desde un datetime ya en UTC."""
+    h = dt_utc.hour + dt_utc.minute/60 + dt_utc.second/3600
+    jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
+    _, ascmc = swe.houses(jd, float(lat), float(lon), 'P')
+    return float(ascmc[0])
+
 def jd_ut(anio, mes, dia, hora, minuto, lat, lon):
     dt_utc, tzname = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     h = dt_utc.hour + dt_utc.minute/60 + dt_utc.second/3600
+    print(f"dt_utc: {dt_utc}, h: {h}, tzname: {tzname}")
     jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
     return jd, tzname, dt_utc
 
@@ -376,13 +494,15 @@ def obtener_signo(grados):
     return signos[int(grados // 30)]
 
 
-def obtener_sol(anio, mes, dia, hora, minuto, lat, lon, inconsciente):
+def obtener_sol(anio, mes, dia, hora, minuto, lat, lon, inconsciente, country_hint):
     #print(
     #    f"🛰️ Procesando Sol → {anio}-{mes}-{dia} {hora}:{minuto}, lat: {lat}, lon: {lon}"
     #)
     #print(f"inconsciente: {inconsciente}")
     # Obtené JD en UT (con DST histórico correcto)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     # Sol en UT
     grados_sol = swe.calc_ut(jd, swe.SUN)[0][0]
@@ -426,10 +546,12 @@ def obtener_sol(anio, mes, dia, hora, minuto, lat, lon, inconsciente):
         "casa": casa
     }
 
-def obtener_tierra(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_tierra(anio, mes, dia, hora, minuto, lat, lon, country_hint):
     
-    sol= obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    sol= obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False, country_hint)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
@@ -453,6 +575,24 @@ def obtener_tierra(anio, mes, dia, hora, minuto, lat, lon):
         "casa": casa
     }
 
+def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon, country_hint):
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    cusps_raw, ascmc = swe.houses(jd, float(lat), float(lon), b'P')
+    asc = float(ascmc[0])
+    signo = obtener_signo(asc)
+    formato_dms = grados_a_dms(asc % 30)
+    #print(f"anio: {anio}, mes: {mes}, dia: {dia}, hora: {hora}, minuto: {minuto}, lat: {lat}, lon: {lon}")
+    #print(f"Ascendente: {asc}° ({formato_dms}) en {signo}")
+    return {
+        "grados": round(asc, 6),
+        "signo": signo,
+        "grado_en_signo": formato_dms,
+        "signo_completo": f"{formato_dms} {signo}",
+        #"tz": tzname,
+        #"utc": dt_utc.isoformat(),
+        #"mode": mode
+    }
+'''
 def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
     # JD en UT (con DST histórico correcto)
     jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
@@ -476,7 +616,8 @@ def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
     signo = obtener_signo(asc)
     grado_signo = asc % 30
     formato_dms = grados_a_dms(grado_signo)
-
+    print(f"anio: {anio}, mes: {mes}, dia: {dia}, hora: {hora}, minuto: {minuto}, lat: {lat}, lon: {lon}")
+    print(f"Ascendente: {asc}° ({formato_dms}) en {signo}")
     return {
         "grados": round(asc, 6),
         "signo": signo,
@@ -486,10 +627,11 @@ def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
         "utc": dt_utc.isoformat(),
         # "cusp1": round(casas[0], 6)  # habilitalo si querés verificación rápida
     }
-
-def obtener_mc(anio, mes, dia, hora, minuto, lat, lon):
+'''
+def obtener_mc(anio, mes, dia, hora, minuto, lat, lon, country_hint):
     # JD en UT (ya con DST histórico correcto)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     cusps_raw, ascmc = swe.houses(jd, float(lat), float(lon), b'P')  # Placidus
     mc = float(ascmc[1])  # Mediocielo (longitud 0–360)
@@ -535,12 +677,13 @@ def obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon):
     }
 '''
 
-def obtener_luna(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_luna(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #print(
     #    f"🛰️ Recibido en /luna → {anio}-{mes}-{dia} {hora}:{minuto}, lat: {lat}, lon: {lon}"
     #)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
@@ -573,10 +716,11 @@ def obtener_luna(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     # Obtené JD en UT (con DST histórico correcto)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     # Mercurio en UT
     grados_mercurio = swe.calc_ut(jd, swe.MERCURY)[0][0]
@@ -606,12 +750,13 @@ def obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_venus(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_venus(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_venus = swe.calc_ut(jd, swe.VENUS)[0][0]
     signo = obtener_signo(grados_venus)
@@ -636,12 +781,13 @@ def obtener_venus(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_marte(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_marte(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_marte = swe.calc_ut(jd, swe.MARS)[0][0]
     signo = obtener_signo(grados_marte)
@@ -659,12 +805,13 @@ def obtener_marte(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_jupiter = swe.calc_ut(jd, swe.JUPITER)[0][0]
     signo = obtener_signo(grados_jupiter)
@@ -682,12 +829,13 @@ def obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_saturno(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_saturno(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_saturno = swe.calc_ut(jd, swe.SATURN)[0][0]
     signo = obtener_signo(grados_saturno)
@@ -705,12 +853,13 @@ def obtener_saturno(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_urano(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_urano(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_urano = swe.calc_ut(jd, swe.URANUS)[0][0]
     signo = obtener_signo(grados_urano)
@@ -728,12 +877,13 @@ def obtener_urano(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_neptuno = swe.calc_ut(jd, swe.NEPTUNE)[0][0]
     signo = obtener_signo(grados_neptuno)
@@ -751,12 +901,13 @@ def obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_pluton(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_pluton(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_pluton = swe.calc_ut(jd, swe.PLUTO)[0][0]
     signo = obtener_signo(grados_pluton)
@@ -775,12 +926,13 @@ def obtener_pluton(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_nodoN = swe.calc_ut(jd, swe.MEAN_NODE)[0][0]
     signo = obtener_signo(grados_nodoN)
@@ -798,12 +950,13 @@ def obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     # Nodo Norte (MEAN Node)
     nodo_norte = swe.calc_ut(jd, swe.MEAN_NODE)[0][0]
@@ -827,12 +980,13 @@ def obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_quiron(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_quiron(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     #offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
     #hora_utc_decimal = hora + minuto / 60 - offset
     #jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+    #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_quiron = swe.calc_ut(jd, swe.CHIRON)[0][0]
     signo = obtener_signo(grados_quiron)
@@ -851,12 +1005,13 @@ def obtener_quiron(anio, mes, dia, hora, minuto, lat, lon):
     }
 
 
-def obtener_lilith(anio, mes, dia, hora, minuto, lat, lon):
+def obtener_lilith(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
    # offset = obtener_offset_horario(anio, mes, dia, hora, minuto, lat, lon)
    # hora_utc_decimal = hora + minuto / 60 - offset
    # jd = swe.julday(anio, mes, dia, hora_utc_decimal)
-    jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
+    jd, tzname, dt_utc, mode = jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint, None)
+   #jd, tzname, dt_utc = jd_ut(anio, mes, dia, hora, minuto, lat, lon)
 
     grados_lilith = swe.calc_ut(jd, 12)[0][0]  # Lilith media
     signo = obtener_signo(grados_lilith)
@@ -1200,7 +1355,7 @@ def procesar_kin_onda(anio, mes, dia):
 '''
 
 
-def procesar(anio, mes, dia, hora, minuto, lat, lon):
+def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     """
     Esta función recibe un número de identificación (nh) y realiza los siguientes pasos:
@@ -1223,24 +1378,24 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     
 
     # Ahora sí: llamás a las funciones de los planetas
-    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
-    luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
-    mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
-    venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
-    marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon)
-    jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon)
-    saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon)
-    urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon)
-    neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon)
-    pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
-    quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon)
-    lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon)
-    ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
-    nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
-    nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
+    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False, country_hint)
+    luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon, country_hint)
     fase = obtener_fase_lunar(sol["grados"], luna["grados"])
     #tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
-    mc = obtener_mc(anio, mes, dia, hora, minuto, lat, lon)
+    mc = obtener_mc(anio, mes, dia, hora, minuto, lat, lon, country_hint)
 
     #print(f" sol {sol['grados']} luna {luna['grados']} tierra {tierra['grados']}")
     #print(f" nodoN {nodoN['grados']} nodoS {nodoS['grados']}")
@@ -1398,7 +1553,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
         "luna_nac": fase,
         "gr_sol": sol["grado_en_signo"],
         "c_sol": sol["casa"],
-        "ascen": obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon),
+        "ascen": ascendente["signo"],
         "gr_asc": ascendente["grado_en_signo"],
         "gr_luna": luna["grado_en_signo"],
         "c_luna": luna["casa"],
@@ -1445,7 +1600,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon):
     #return registro
 
 
-def procesar_dh(anio, mes, dia, hora, minuto, lat, lon):
+def procesar_dh(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
     '''
     Calcula datos de DH
@@ -1455,22 +1610,22 @@ def procesar_dh(anio, mes, dia, hora, minuto, lat, lon):
     
 
     # Ahora sí: llamás a las funciones de los planetas
-    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
-    luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
-    mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
-    venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
-    marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon)
-    jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon)
-    saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon)
-    urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon)
-    neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon)
-    pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
+    sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False, country_hint)
+    luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon, country_hint)
 
-    ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
-    nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
-    nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
+    ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+    nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon, country_hint)
     
-    tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
+    tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon, country_hint)
    
 
     
@@ -1493,21 +1648,21 @@ def procesar_dh(anio, mes, dia, hora, minuto, lat, lon):
     fecha_inco= fecha_natal - deltain
     fecha_inco = fecha_inco.replace(hour=0, minute=0, second=0, microsecond=0)
     '''
-    luna_in = obtener_luna(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)
+    luna_in = obtener_luna(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)
     #print(f"grado luna inconsciente {luna_in['grados']}")
     luna_inconsciente =     luna_in["grados"]
     #luna_inconsciente =     (luna["grados"]-grados_inlun)%360
         
-    nodon_inconsciente =    obtener_nodoN(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    nodos_inconsciente =    obtener_nodo_sur(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    mercurio_inconsciente = obtener_mercurio(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    venus_inconsciente =    obtener_venus(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    marte_inconsciente =    obtener_marte(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    jupiter_inconsciente =  obtener_jupiter(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    saturno_inconsciente =  obtener_saturno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    urano_inconsciente =    obtener_urano(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    neptuno_inconsciente =  obtener_neptuno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    pluton_inconsciente =   obtener_pluton(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    nodon_inconsciente =    obtener_nodoN(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    nodos_inconsciente =    obtener_nodo_sur(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    mercurio_inconsciente = obtener_mercurio(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    venus_inconsciente =    obtener_venus(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    marte_inconsciente =    obtener_marte(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    jupiter_inconsciente =  obtener_jupiter(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    saturno_inconsciente =  obtener_saturno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    urano_inconsciente =    obtener_urano(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    neptuno_inconsciente =  obtener_neptuno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    pluton_inconsciente =   obtener_pluton(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
     
     
     #grado_sol_inconsciente = sol["grados"]- grados_in
@@ -2213,9 +2368,12 @@ def calcular():
         minuto = int(minuto_str)
         lat = float(fila['lat'])
         lon = float(fila['lon'])
+        #pais = fila['pais']
 
-        # Llamar a función principal
-        resultado = procesar(anio, mes, dia, hora, minuto, lat, lon)
+        country_hint = fila.get('pais') 
+        # Llamá tu función principal pasando country_hint
+        resultado = procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint=country_hint)
+        
 
         return jsonify(resultado)
 
@@ -2244,9 +2402,10 @@ def calcular_dh():
         minuto = int(minuto_str)
         lat = float(fila['lat'])
         lon = float(fila['lon'])
+        country_hint = fila['pais']  # Obtener el país si está disponible
 
         # Llamar a función principal
-        resultado = procesar_dh(anio, mes, dia, hora, minuto, lat, lon)
+        resultado = procesar_dh(anio, mes, dia, hora, minuto, lat, lon, country_hint)
 
         return jsonify(resultado)
 
@@ -2323,6 +2482,7 @@ def guardar_datos():
 
         lat = float(data.get("lat")) if data.get("lat") not in (None, "") else None
         lon = float(data.get("lon")) if data.get("lon") not in (None, "") else None
+        country_hint = str(data.get("pais") or "").strip()  
 
         #data = request.get_json()
         #nh = data.get("nh")
@@ -2341,22 +2501,22 @@ def guardar_datos():
             return jsonify({"error": "Faltan datos obligatorios"}), 400
         
             # Ahora sí: llamás a las funciones de los planetas
-        sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False)
-        luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon)
-        mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, lon)
-        venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon)
-        marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon)
-        jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon)
-        saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon)
-        urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon)
-        neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon)
-        pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon)
-        quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon)
-        lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon)
-        ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon)
-        nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon)
-        nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon)
-        mc = obtener_mc(anio, mes, dia, hora, minuto, lat, lon)
+        sol = obtener_sol(anio, mes, dia, hora, minuto, lat, lon, False, country_hint)
+        luna = obtener_luna(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        mercurio = obtener_mercurio(anio, mes, dia, hora, minuto, lat, country_hint)
+        venus = obtener_venus(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        marte = obtener_marte(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        jupiter = obtener_jupiter(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        saturno = obtener_saturno(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        urano = obtener_urano(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        neptuno = obtener_neptuno(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        pluton = obtener_pluton(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        quiron = obtener_quiron(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        lilith = obtener_lilith(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        ascendente =  obtener_ascendente(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon, country_hint)
+        mc = obtener_mc(anio, mes, dia, hora, minuto, lat, lon, country_hint)
     
         
          
@@ -2505,8 +2665,10 @@ def api_procesa_datos():
         minuto = int(data["minuto"])
         lat = float(data["lat"])
         lon = float(data["lon"])
+        country_hint = data['pais'] 
+        
         modo = request.args.get("modo", "json")
-        resultado = procesar_dh(anio, mes, dia, hora, minuto, lat, lon)
+        resultado = procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint=country_hint)
         if modo == "string":
             return resultado
         else:
