@@ -1782,6 +1782,7 @@ def _clave(pares_consc, pares_inconsc):
 
 # Mapa: ((pSolCon,pTieCon),(pSolDis,pTieDis)) -> nombre de cruz
 # (Si te llega invertido Sol/Tierra dentro de cada par, igual matchea porque ordenamos)
+
 CRUCES = {
     _clave("9,16", "40,37"): "Angulo Derecho de la Planificacion 4",
     _clave("9,16", "64,63"): "Cruz Yuxtapuesta del Foco",
@@ -2311,6 +2312,7 @@ def guardar_datos():
         nh = data.get("nh")
         perfil = str(data.get("perfil") or "").strip()
         tipo_dh = str(data.get("tipo_dh") or "").strip()
+        id_cruz = str(data.get("id_cruz") or "").strip()
 
         fecha_nac = (data.get("fecha_nac") or "").strip()         # YYYY-MM-DD
         anio, mes, dia = map(int, fecha_nac.split("-"))
@@ -2335,7 +2337,7 @@ def guardar_datos():
 
 
 
-        if not nh or not tipo_dh or not perfil or not fecha_nac or not hora_nac :
+        if not nh or not tipo_dh or not perfil or not id_cruz or not fecha_nac or not hora_nac :
             return jsonify({"error": "Faltan datos obligatorios"}), 400
         
             # Ahora sí: llamás a las funciones de los planetas
@@ -2469,7 +2471,8 @@ def guardar_datos():
             "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
             "cumple_kin": fecha_iso ,
             "tipo_dh": tipo_dh,
-            "perfil": perfil
+            "perfil": perfil,
+            "id_cruz": id_cruz,
        
         }
 
