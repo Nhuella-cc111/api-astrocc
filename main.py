@@ -1293,68 +1293,42 @@ def calcular_kin_onda(anio, mes, dia):
 
 
 
-def cumple_kin(kin):
+def cumple_kin(kin: int) -> str | None:
     """
-    Calcula el próximo cumpleaños Kin desde HOY, basado en ciclos de 260 días.
-    Parámetros:
-        kin (int): número del kin (1-260)
-    Retorna:
-        dict: {
-            "fecha": "dd/mm/yyyy",
-            "dias_faltantes": int,
-            "ciclo_inicio": "dd/mm/yyyy",
-            "ciclo_fin": "dd/mm/yyyy"
-        }
+    Devuelve la PRÓXIMA fecha de ese Kin (contando el día de corte),
+    restando 1 día al resultado final.
     """
-    if not isinstance(kin, int) or kin < 1 or kin > 260:
-        return {"error": "Kin inválido"}
+    if not isinstance(kin, int) or not (1 <= kin <= 260):
+        return None
 
     ciclo = 260
     hoy = datetime.now().date()
-    inicio_base = datetime(2025, 3, 25).date()  # Primer ciclo de referencia
 
-    # Días desde el inicio base
+    # Kin 1 de referencia
+    inicio_base = datetime(2025, 3, 25).date()
+
+    # días pasados desde el inicio de referencia
     dias_desde_inicio = (hoy - inicio_base).days
 
-    # Cuántos ciclos completos han pasado
+    # cuántos ciclos completos pasaron (para ubicar el inicio del ciclo actual)
     ciclos_pasados = dias_desde_inicio // ciclo if dias_desde_inicio >= 0 else -1
-
-    # Inicio del ciclo actual
     inicio_ciclo_actual = inicio_base + timedelta(days=ciclos_pasados * ciclo)
     if inicio_ciclo_actual > hoy:
         inicio_ciclo_actual -= timedelta(days=ciclo)
 
-    # Fecha de kin en el ciclo actual
-    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin -1 ))
+    # fecha del kin dentro del ciclo actual (offset = kin-1)
+    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin-1))
 
-    # Si ya pasó hoy, sumamos un ciclo
+    # si ya pasó (o es hoy), salta al próximo ciclo
     if fecha_kin <= hoy:
         fecha_kin += timedelta(days=ciclo)
-        fecha_kin -= 1
-        inicio_ciclo_actual += timedelta(days=ciclo)
 
-    #fin_ciclo_actual = inicio_ciclo_actual + timedelta(days=ciclo - 1)
-
-    #dias_faltantes = (fecha_kin - hoy).days
-    return fecha_kin.strftime("%d/%m/%Y")
     
+    return fecha_kin.strftime("%d/%m/%Y")
+
+
 
  
-
-'''
-def procesar_kin_onda(anio, mes, dia):
-
-    registro = {
-        "nro_kin": calcular_kin_onda(anio, mes, dia)["nro_kin"],
-        "nro_onda": calcular_kin_onda(anio, mes, dia)["nro_onda"],
-        "nro_tono": calcular_kin_onda(anio, mes, dia)["nro_tono"],
-        "nro_sello": calcular_kin_onda(anio, mes, dia)["nro_sello"],
-       
-        
-    } 
-    return registro;
-'''
-
 
 def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
 
