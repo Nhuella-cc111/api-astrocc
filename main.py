@@ -1325,11 +1325,12 @@ def cumple_kin(kin):
         inicio_ciclo_actual -= timedelta(days=ciclo)
 
     # Fecha de kin en el ciclo actual
-    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin ))-1
+    fecha_kin = inicio_ciclo_actual + timedelta(days=(kin -1 ))
 
     # Si ya pasó hoy, sumamos un ciclo
     if fecha_kin <= hoy:
-        fecha_kin += timedelta(days=ciclo)-1
+        fecha_kin += timedelta(days=ciclo)
+        fecha_kin -= 1
         inicio_ciclo_actual += timedelta(days=ciclo)
 
     #fin_ciclo_actual = inicio_ciclo_actual + timedelta(days=ciclo - 1)
