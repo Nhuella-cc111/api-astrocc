@@ -2448,7 +2448,11 @@ def guardar_datos():
         nh = data.get("nh")
         perfil = str(data.get("perfil") or "").strip()
         tipo_dh = str(data.get("tipo_dh") or "").strip()
-        id_cruz = data.get("id_cruz")
+        autoridad = str(data.get("autoridad") or "").strip()
+        digestion = str(data.get("digestion") or "").strip()
+        entorno = str(data.get("entorno") or "").strip()
+        
+        #id_cruz = data.get("id_cruz")
 
         fecha_nac = (data.get("fecha_nac") or "").strip()         # YYYY-MM-DD
         anio, mes, dia = map(int, fecha_nac.split("-"))
@@ -2609,7 +2613,10 @@ def guardar_datos():
             "cumple_kin": fecha_iso ,
             "tipo_dh": tipo_dh,
             "perfil": perfil,
-            "id_cruz": id_cruz,
+            "autoridad": autoridad,
+            "digestion": digestion,
+            "entorno":  entorno,
+            #"id_cruz": id_cruz,
        
         }
 
