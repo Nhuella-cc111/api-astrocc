@@ -2478,7 +2478,7 @@ def guardar_datos():
 
 
 
-        if not nh or not tipo_dh or not perfil or not id_cruz or not fecha_nac or not hora_nac :
+        if not nh or not tipo_dh or not perfil or not autoridad or not digestion or not entorno or not fecha_nac or not hora_nac :
             return jsonify({"error": "Faltan datos obligatorios"}), 400
         
             # Ahora sí: llamás a las funciones de los planetas
