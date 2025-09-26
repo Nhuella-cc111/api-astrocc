@@ -1369,7 +1369,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
     nodoN = obtener_nodoN(anio, mes, dia, hora, minuto, lat, lon, country_hint)
     nodoS = obtener_nodo_sur(anio, mes, dia, hora, minuto, lat, lon, country_hint)
     fase = obtener_fase_lunar(sol["grados"], luna["grados"])
-    #tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon)
+    tierra = obtener_tierra(anio, mes, dia, hora, minuto, lat, lon, country_hint)
     mc = obtener_mc(anio, mes, dia, hora, minuto, lat, lon, country_hint)
 
     #print(f" sol {sol['grados']} luna {luna['grados']} tierra {tierra['grados']}")
@@ -1410,7 +1410,8 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
     }
     #print("planetas en signos", planetas_en_signos)
     #print("planetas en signos 12", planetas_en_signos12)
-    ''''
+
+    #### prueba dh
     anio_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["anio_i"]
     mes_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["mes_i"]
     dia_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["dia_i"]
@@ -1418,33 +1419,34 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
     min_in = fecha_sol_inconsciente(anio, mes, dia, hora, minuto)["minuto_i"]
     
     grados_in =88.3
-    #grados_inlun = 88*12.92
+    grados_inlun = 88*12.92
 
     
     sol_inconsciente =      (sol["grados"]-grados_in)%360
     #print(f"grado sol inconsciente {sol_inconsciente}")
     tierra_inconsciente =   (tierra["grados"]-grados_in)%360
-    '''
+    
     #fecha_natal = datetime(anio, mes, dia, hora, minuto)
     #deltain = timedelta(days=88, hours=7, minutes=12, seconds=50) # 0.3 días ≈ 7h12m
     #fecha_inco= fecha_natal - deltain
     #fecha_inco = fecha_inco.replace(hour=0, minute=0, second=0, microsecond=0)
-    '''
-    luna_in = obtener_luna(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)
-    #print(f"grado luna inconsciente {luna_in['grados']}")
+
+    #####prueba dh
+    luna_in = obtener_luna(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)
+    print(f"grado luna inconsciente {luna_in['grados']}")
     luna_inconsciente =     luna_in["grados"]
     #luna_inconsciente =     (luna["grados"]-grados_inlun)%360
         
-    nodon_inconsciente =    obtener_nodoN(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    nodos_inconsciente =    obtener_nodo_sur(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    mercurio_inconsciente = obtener_mercurio(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    venus_inconsciente =    obtener_venus(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    marte_inconsciente =    obtener_marte(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    jupiter_inconsciente =  obtener_jupiter(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    saturno_inconsciente =  obtener_saturno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    urano_inconsciente =    obtener_urano(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    neptuno_inconsciente =  obtener_neptuno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
-    pluton_inconsciente =   obtener_pluton(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon)["grados"]
+    nodon_inconsciente =    obtener_nodoN(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    nodos_inconsciente =    obtener_nodo_sur(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    mercurio_inconsciente = obtener_mercurio(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    venus_inconsciente =    obtener_venus(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    marte_inconsciente =    obtener_marte(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    jupiter_inconsciente =  obtener_jupiter(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    saturno_inconsciente =  obtener_saturno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    urano_inconsciente =    obtener_urano(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    neptuno_inconsciente =  obtener_neptuno(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
+    pluton_inconsciente =   obtener_pluton(anio_in, mes_in, dia_in, hora_in, min_in, lat, lon, country_hint)["grados"]
     
     
     #grado_sol_inconsciente = sol["grados"]- grados_in
@@ -1477,7 +1479,7 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
         tolerancia = 0
         puerta_dict = obtener_puerta(grado_inconsciente, tolerancia)
         puerta = puerta_dict["puerta"] if puerta_dict else None
-        #print(f"puerta activa :{nombre} : {puerta}")
+        print(f"puerta activa :{nombre} : {puerta}")
         if puerta:
             puertas_activadas.append(puerta)
             
@@ -1506,7 +1508,9 @@ def procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint):
     #print(f"Perfil: {perfil}")
     #print(f"Tipo: {tipo}")
     #print(f"Cruz de encarnación: {cruz}")
-    '''
+
+    ###### prueba dh
+
     registro = {
         "fecha_nac": date(anio, mes, dia),
         "hora": hora,
@@ -2320,11 +2324,11 @@ def guard():
     if request.path.startswith(protected):
         require_api_key()
 
-
+configurar_swisseph()
 @app.route('/calcular')
 def calcular():
     
-    configurar_swisseph()
+    #configurar_swisseph()
     nh = request.args.get('nh')
     if not nh:
         return jsonify({"error": "Falta parámetro nh"}), 400
@@ -2511,11 +2515,7 @@ def guardar_datos():
             "Jupiter": jupiter["signo"],
             "Saturno": saturno["signo"],
             "Asc": ascendente["signo"]
-           # "Urano": urano["signo"],
-           # "Neptuno": neptuno["signo"],
-           # "Plutón": pluton["signo"],
-           # "Quiron": quiron["signo"],
-           # "Lilith": lilith["signo"]
+        
         }
 
         planetas_en_signos12 = {
@@ -2564,7 +2564,7 @@ def guardar_datos():
             "pluton": pluton["signo"],
             "quiron": quiron["signo"],
             "lilith": lilith["signo"],
-            "gr_sol": sol["grados"],
+            #"gr_sol": sol["grados"],
             "gr_luna": luna["grados"],
             "luna_nac": fase,
             "gr_sol": sol["grado_en_signo"],
@@ -2621,14 +2621,44 @@ def guardar_datos():
         }
 
          # 2. Insertar en datoscc
-        response = supabase.table("datoscc").insert(registro).execute()
+        #response = supabase.table("datoscc").insert(registro).execute()
 
+        try:
+            resp = supabase.table("datoscc").upsert(registro, on_conflict="nh").execute()
+        except AttributeError:
+            # Fallback si tu cliente no tiene upsert()
+            exists = supabase.table("datoscc").select("nh").eq("nh", nh).execute()
+            if getattr(exists, "data", None) and len(exists.data) > 0:
+                payload = {k: v for k, v in registro.items() if k != "nh"}  # no seteamos nh en el SET
+                resp = supabase.table("datoscc").update(payload).eq("nh", nh).execute()
+            else:
+                resp = supabase.table("datoscc").insert(registro).execute()
+        
+        # 3) Chequear resultado y marcar procesado (idempotente)
+        if getattr(resp, "data", None):
+            # Marcá procesado sólo si aún no lo estaba (idempotente)
+            supabase.table("rtas_form") \
+                .update({"procesado": True, "procesado_at": datetime.utcnow().isoformat()}) \
+                .eq("nh", nh) \
+                .neq("procesado", True) \
+                .execute()
+        
+            return jsonify({"status": "ok", "upserted": resp.data})
+        else:
+            return jsonify({"error": "No se pudo upsert en datoscc"}), 500
+       
+
+
+
+        '''
+        
         # 3. Chequear resultado antes de marcar procesado
         if response.data:
             marcar_procesado_en_rtas_form(supabase, nh)
             return jsonify({"status": "ok", "inserted": response.data})
         else:
             return jsonify({"error": "No se pudo insertar en datoscc"}), 500
+        '''
 
         # return jsonify(dict(registro)) ## para pruebas
 
@@ -2659,6 +2689,8 @@ def api_procesa_datos():
             return jsonify(resultado)
     except Exception as e:
         return jsonify({"error": str(e)}), 500    
+    
+
 
 @app.route('/')
 def home():
