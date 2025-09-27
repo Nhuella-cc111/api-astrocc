@@ -2638,7 +2638,7 @@ def guardar_datos():
         if getattr(resp, "data", None):
             # Marcá procesado sólo si aún no lo estaba (idempotente)
             supabase.table("rtas_form") \
-                .update({"procesado": True, "procesado_at": datetime.utcnow().isoformat()}) \
+                .update({"procesado": True, "created_at": datetime.utcnow().isoformat()}) \
                 .eq("nh", nh) \
                 .neq("procesado", True) \
                 .execute()
