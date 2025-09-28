@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 
 
+
 API_SECRET = os.environ.get("API_SHARED_SECRET")
 
 def require_api_key():
@@ -271,8 +272,83 @@ def jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, override_offset_hours=No
     jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
     return jd, tzname, dt_utc, mode
 '''
+###########################
 
 
+# Singleton: evita cargar datos de TZ en cada request
+TF = TimezoneFinder(in_memory=True)
+
+
+
+def _canon_pais(pais):
+    p = (pais or "").strip().lower()
+    if p in ("argentina","ar"): return "AR"
+    if p in ("chile","cl"):     return "CL"
+    if p in ("uruguay","uy"):   return "UY"
+    if p in ("brasil","brazil","br"): return "BR"
+    return None
+
+def _es_argentina(lat, lon):
+    # BBox amplia, rápida y suficiente para corregir falsos Sao_Paulo en Patagonia
+    return (-55.2 <= lat <= -21.8) and (-74.1 <= lon <= -53.5)
+
+def _tz_desde_coords(lat, lon, country_hint=None):
+    """
+    1) Intenta resolver el tzname con TimezoneFinder.
+    2) Si las coords están en Argentina y TF devolvió otro país, fuerza un tz argentino.
+       (No toca Chile/Uruguay/Brasil si están fuera del bbox de AR.)
+    3) Si pasás country_hint, lo usa como desempate (ej. AR/CL/UY).
+    """
+    tz_tf = TF.timezone_at(lat=float(lat), lng=float(lon)) \
+         or TF.closest_timezone_at(lat=float(lat), lng=float(lon))
+    tz = tz_tf
+
+    ch = _canon_pais(country_hint)
+
+    # Si el usuario declaró AR y coords son de AR pero TF no dio tz argentino
+    if ch == "AR" and _es_argentina(lat, lon) and not (tz and tz.startswith("America/Argentina")):
+        tz = "America/Argentina/Buenos_Aires"
+
+    # Si NO hubo hint y coords son de AR pero TF dio otro país, corregí a AR
+    if ch is None and _es_argentina(lat, lon) and not (tz and tz.startswith("America/Argentina")):
+        tz = "America/Argentina/Buenos_Aires"
+
+    # Si el usuario declaró CL/UY, preferí un tz del país (simple y suficiente)
+    if ch == "CL":
+        tz = "America/Santiago"
+    elif ch == "UY":
+        tz = "America/Montevideo"
+
+    return tz or "UTC", tz_tf or "?"
+
+# --- principal ---
+
+def jd_ut_smart(anio, mes, dia, hora, minuto, lat, lon, country_hint=None, override_offset_hours=None):
+    """
+    Devuelve: (jd_UT, tzname_final, dt_utc, mode_str)
+
+    - tzname_final: tz IANA elegido (corrigiendo falsos positivos en AR).
+    - dt_utc: datetime en UTC según tzdb (IANA).
+    - mode_str: texto breve para logs (cómo se derivó la UT).
+    """
+    tzname, tz_tf = _tz_desde_coords(lat, lon, country_hint)
+
+    if override_offset_hours is not None:
+        # Solo para debug/testing puntual
+        dt_utc = datetime(anio, mes, dia, hora, minuto) - timedelta(hours=float(override_offset_hours))
+        mode = f"override_{override_offset_hours:+.1f}h (tf={tz_tf})"
+    else:
+        dt_local = datetime(anio, mes, dia, hora, minuto, tzinfo=ZoneInfo(tzname))
+        dt_utc = dt_local.astimezone(ZoneInfo("UTC"))
+        off_hours = (dt_local.utcoffset().total_seconds() / 3600.0) if dt_local.utcoffset() else 0.0
+        mode = f"zoneinfo({off_hours:+.1f}h, tf={tz_tf})"
+
+    h = dt_utc.hour + dt_utc.minute/60 + dt_utc.second/3600
+    jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
+    return jd, tzname, dt_utc, mode
+
+###########################
+'''
 TF = TimezoneFinder(in_memory=True)
 
 AR_TZS = ("America/Argentina/",)  # prefijo
@@ -358,7 +434,7 @@ def jd_ut(anio, mes, dia, hora, minuto, lat, lon):
     print(f"dt_utc: {dt_utc}, h: {h}, tzname: {tzname}")
     jd = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, h)
     return jd, tzname, dt_utc
-
+'''
 def _casas_1_a_12(jd, lat, lon, hsys='P'):
     cusps_raw, _ = swe.houses(jd, float(lat), float(lon), hsys)
     if len(cusps_raw) == 13:
@@ -2353,7 +2429,7 @@ def calcular():
         # Llamá tu función principal pasando country_hint
         resultado = procesar(anio, mes, dia, hora, minuto, lat, lon, country_hint=country_hint)
         
-
+        #print("Resultado:", resultado)  # Depuración
         return jsonify(resultado)
 
     except Exception as e:
